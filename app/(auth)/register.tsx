@@ -2,12 +2,23 @@ import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Eye, EyeOff } from 'lucide-react-native';
+import { ArrowLeft, Eye, EyeOff, Mail, Lock, User } from 'lucide-react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import AnimatedButton from '@/components/ui/AnimatedButton';
+import NeumorphicCard from '@/components/ui/NeumorphicCard';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function RegisterScreen() {
   const router = useRouter();
   const { signUp } = useAuth();
+  const { theme, isDark } = useTheme();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,6 +32,19 @@ export default function RegisterScreen() {
     password?: string;
     confirmPassword?: string;
   }>({});
+
+  const translateY = useSharedValue(50);
+  const opacity = useSharedValue(0);
+
+  useState(() => {
+    translateY.value = withSpring(0, { damping: 15, stiffness: 100 });
+    opacity.value = withTiming(1, { duration: 800 });
+  });
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+    opacity: opacity.value,
+  }));
 
   const validateForm = () => {
     const newErrors: {
@@ -65,218 +89,254 @@ export default function RegisterScreen() {
     } else {
       Alert.alert(
         'Cuenta creada',
-        'Tu cuenta ha sido creada exitosamente. Revisa tu email para confirmar tu cuenta.',
-        [{ text: 'OK', onPress: () => router.replace('/(auth)/login') }]
+        'Tu cuenta ha sido creada exitosamente.',
+        [{ text: 'OK', onPress: () => router.replace('/(tabs)') }]
       );
     }
     setLoading(false);
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <ArrowLeft size={24} color="#6b7280" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Crear Cuenta</Text>
-      </View>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      {/* Fondo con gradiente */}
+      <LinearGradient
+        colors={isDark 
+          ? [theme.colors.background, theme.colors.surface, theme.colors.background]
+          : [theme.colors.primary + '10', theme.colors.background, theme.colors.secondary + '05']
+        }
+        style={StyleSheet.absoluteFill}
+      />
 
-      <View style={styles.form}>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Nombre Completo</Text>
-          <TextInput
-            style={[styles.input, errors.fullName && styles.inputError]}
-            value={fullName}
-            onChangeText={setFullName}
-            placeholder="Tu nombre completo"
+      <SafeAreaView style={styles.safeArea}>
+        {/* Header */}
+        <View style={styles.header}>
+          <AnimatedButton
+            title=""
+            onPress={() => router.back()}
+            variant="ghost"
+            size="sm"
+            icon={<ArrowLeft size={24} color={theme.colors.text} />}
+            style={styles.backButton}
           />
-          {errors.fullName && <Text style={styles.errorText}>{errors.fullName}</Text>}
-        </View>
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={[styles.input, errors.email && styles.inputError]}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="tu@email.com"
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
-        </View>
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Contraseña</Text>
-          <View style={styles.passwordContainer}>
-            <TextInput
-              style={[styles.passwordInput, errors.password && styles.inputError]}
-              value={password}
-              onChangeText={setPassword}
-              placeholder="••••••••"
-              secureTextEntry={!showPassword}
-            />
-            <TouchableOpacity
-              style={styles.eyeButton}
-              onPress={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? (
-                <EyeOff size={20} color="#6b7280" />
-              ) : (
-                <Eye size={20} color="#6b7280" />
-              )}
-            </TouchableOpacity>
-          </View>
-          {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-        </View>
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Confirmar Contraseña</Text>
-          <View style={styles.passwordContainer}>
-            <TextInput
-              style={[styles.passwordInput, errors.confirmPassword && styles.inputError]}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              placeholder="••••••••"
-              secureTextEntry={!showConfirmPassword}
-            />
-            <TouchableOpacity
-              style={styles.eyeButton}
-              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-            >
-              {showConfirmPassword ? (
-                <EyeOff size={20} color="#6b7280" />
-              ) : (
-                <Eye size={20} color="#6b7280" />
-              )}
-            </TouchableOpacity>
-          </View>
-          {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
-        </View>
-
-        <TouchableOpacity
-          style={[styles.registerButton, loading && styles.registerButtonDisabled]}
-          onPress={handleRegister}
-          disabled={loading}
-        >
-          <Text style={styles.registerButtonText}>
-            {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
+          <Text style={[styles.title, { color: theme.colors.text }]}>
+            Crear Cuenta
           </Text>
-        </TouchableOpacity>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>¿Ya tienes cuenta? </Text>
-          <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
-            <Text style={styles.linkText}>Inicia sesión</Text>
-          </TouchableOpacity>
+          <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
+            Únete a nuestra comunidad
+          </Text>
         </View>
-      </View>
-    </SafeAreaView>
+
+        <Animated.View style={[styles.formContainer, animatedStyle]}>
+          <NeumorphicCard style={styles.formCard}>
+            <View style={styles.inputContainer}>
+              <Text style={[styles.label, { color: theme.colors.text }]}>Nombre Completo</Text>
+              <View style={[
+                styles.inputWrapper, 
+                { 
+                  borderColor: errors.fullName ? theme.colors.error : theme.colors.border,
+                  backgroundColor: theme.colors.surface 
+                }
+              ]}>
+                <User size={20} color={theme.colors.textMuted} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, { color: theme.colors.text }]}
+                  value={fullName}
+                  onChangeText={setFullName}
+                  placeholder="Tu nombre completo"
+                  placeholderTextColor={theme.colors.textMuted}
+                />
+              </View>
+              {errors.fullName && <Text style={[styles.errorText, { color: theme.colors.error }]}>{errors.fullName}</Text>}
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={[styles.label, { color: theme.colors.text }]}>Email</Text>
+              <View style={[
+                styles.inputWrapper, 
+                { 
+                  borderColor: errors.email ? theme.colors.error : theme.colors.border,
+                  backgroundColor: theme.colors.surface 
+                }
+              ]}>
+                <Mail size={20} color={theme.colors.textMuted} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, { color: theme.colors.text }]}
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="tu@email.com"
+                  placeholderTextColor={theme.colors.textMuted}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
+              {errors.email && <Text style={[styles.errorText, { color: theme.colors.error }]}>{errors.email}</Text>}
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={[styles.label, { color: theme.colors.text }]}>Contraseña</Text>
+              <View style={[
+                styles.inputWrapper, 
+                { 
+                  borderColor: errors.password ? theme.colors.error : theme.colors.border,
+                  backgroundColor: theme.colors.surface 
+                }
+              ]}>
+                <Lock size={20} color={theme.colors.textMuted} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, { color: theme.colors.text }]}
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="••••••••"
+                  placeholderTextColor={theme.colors.textMuted}
+                  secureTextEntry={!showPassword}
+                />
+                <TouchableOpacity
+                  style={styles.eyeButton}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff size={20} color={theme.colors.textMuted} />
+                  ) : (
+                    <Eye size={20} color={theme.colors.textMuted} />
+                  )}
+                </TouchableOpacity>
+              </View>
+              {errors.password && <Text style={[styles.errorText, { color: theme.colors.error }]}>{errors.password}</Text>}
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={[styles.label, { color: theme.colors.text }]}>Confirmar Contraseña</Text>
+              <View style={[
+                styles.inputWrapper, 
+                { 
+                  borderColor: errors.confirmPassword ? theme.colors.error : theme.colors.border,
+                  backgroundColor: theme.colors.surface 
+                }
+              ]}>
+                <Lock size={20} color={theme.colors.textMuted} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, { color: theme.colors.text }]}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  placeholder="••••••••"
+                  placeholderTextColor={theme.colors.textMuted}
+                  secureTextEntry={!showConfirmPassword}
+                />
+                <TouchableOpacity
+                  style={styles.eyeButton}
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff size={20} color={theme.colors.textMuted} />
+                  ) : (
+                    <Eye size={20} color={theme.colors.textMuted} />
+                  )}
+                </TouchableOpacity>
+              </View>
+              {errors.confirmPassword && <Text style={[styles.errorText, { color: theme.colors.error }]}>{errors.confirmPassword}</Text>}
+            </View>
+
+            <AnimatedButton
+              title={loading ? 'Creando cuenta...' : 'Crear Cuenta'}
+              onPress={handleRegister}
+              variant="gradient"
+              size="lg"
+              disabled={loading}
+              style={styles.registerButton}
+            />
+
+            <View style={styles.footer}>
+              <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>¿Ya tienes cuenta? </Text>
+              <AnimatedButton
+                title="Inicia sesión"
+                onPress={() => router.push('/(auth)/login')}
+                variant="ghost"
+                size="sm"
+                textStyle={{ color: theme.colors.primary, fontSize: 16 }}
+              />
+            </View>
+          </NeumorphicCard>
+        </Animated.View>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+  },
+  safeArea: {
+    flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
     padding: 24,
     paddingTop: 16,
   },
   backButton: {
-    marginRight: 16,
+    alignSelf: 'flex-start',
+    marginBottom: 20,
   },
   title: {
-    fontSize: 20,
-    fontFamily: 'Inter_600SemiBold',
-    color: '#1f2937',
+    fontSize: 32,
+    fontFamily: 'Inter_700Bold',
+    marginBottom: 8,
   },
-  form: {
+  subtitle: {
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
+  },
+  formContainer: {
     flex: 1,
     padding: 24,
+  },
+  formCard: {
+    padding: 32,
   },
   inputContainer: {
     marginBottom: 20,
   },
   label: {
     fontSize: 16,
-    fontFamily: 'Inter_500Medium',
-    color: '#374151',
+    fontFamily: 'Inter_600SemiBold',
     marginBottom: 8,
   },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    height: 56,
+  },
+  inputIcon: {
+    marginRight: 12,
+  },
   input: {
-    height: 52,
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-  },
-  inputError: {
-    borderColor: '#ef4444',
-  },
-  passwordContainer: {
-    position: 'relative',
-  },
-  passwordInput: {
-    height: 52,
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingRight: 50,
+    flex: 1,
     fontSize: 16,
     fontFamily: 'Inter_400Regular',
   },
   eyeButton: {
-    position: 'absolute',
-    right: 16,
-    top: 16,
+    padding: 8,
+    marginLeft: 8,
   },
   errorText: {
     fontSize: 14,
     fontFamily: 'Inter_400Regular',
-    color: '#ef4444',
     marginTop: 4,
   },
   registerButton: {
-    height: 52,
-    backgroundColor: '#4f46e5',
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  registerButtonDisabled: {
-    backgroundColor: '#9ca3af',
-  },
-  registerButtonText: {
-    fontSize: 16,
-    fontFamily: 'Inter_600SemiBold',
-    color: 'white',
+    marginTop: 8,
+    marginBottom: 24,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 32,
+    alignItems: 'center',
   },
   footerText: {
     fontSize: 16,
     fontFamily: 'Inter_400Regular',
-    color: '#6b7280',
-  },
-  linkText: {
-    fontSize: 16,
-    fontFamily: 'Inter_600SemiBold',
-    color: '#4f46e5',
   },
 });

@@ -13,7 +13,7 @@ import Animated, {
 import { useEffect, useState } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Heart, Brain, Users, MessageCircle, Star, ArrowRight, Moon, Sun, Sparkles } from 'lucide-react-native';
+import { Heart, Brain, Users, MessageCircle, ArrowRight, Moon, Sun, Sparkles } from 'lucide-react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -33,11 +33,11 @@ export default function AuthIndex() {
   const [currentQuote, setCurrentQuote] = useState(0);
 
   const moods = [
-    { emoji: '😊', label: 'Feliz', color: '#FFE4E6', textColor: '#BE185D' },
-    { emoji: '🤔', label: 'Curioso', color: '#EDE9FE', textColor: '#7C3AED' },
-    { emoji: '😌', label: 'Tranquilo', color: '#DBEAFE', textColor: '#2563EB' },
-    { emoji: '😟', label: 'Ansioso', color: '#FEF3C7', textColor: '#D97706' },
-    { emoji: '💪', label: 'Motivado', color: '#D1FAE5', textColor: '#059669' },
+    { emoji: '😊', label: 'Feliz', color: theme.colors.primary + '20', textColor: theme.colors.primary },
+    { emoji: '🤔', label: 'Curioso', color: theme.colors.secondary + '20', textColor: theme.colors.secondary },
+    { emoji: '😌', label: 'Tranquilo', color: theme.colors.accent + '20', textColor: theme.colors.accent },
+    { emoji: '😟', label: 'Ansioso', color: theme.colors.warning + '20', textColor: theme.colors.warning },
+    { emoji: '💪', label: 'Motivado', color: theme.colors.success + '20', textColor: theme.colors.success },
   ];
 
   const features = [
@@ -45,22 +45,22 @@ export default function AuthIndex() {
       icon: Brain,
       title: 'Tests Vocacionales',
       description: 'Descubre tu carrera ideal con evaluaciones personalizadas',
-      color: '#EDE9FE',
-      iconColor: '#7C3AED',
+      color: theme.colors.primary + '15',
+      iconColor: theme.colors.primary,
     },
     {
       icon: Users,
       title: 'Mentores Expertos',
       description: 'Conecta con profesionales que te guiarán en tu camino',
-      color: '#DBEAFE',
-      iconColor: '#2563EB',
+      color: theme.colors.secondary + '15',
+      iconColor: theme.colors.secondary,
     },
     {
       icon: MessageCircle,
       title: 'Apoyo Emocional',
       description: 'Chat inteligente disponible 24/7 para acompañarte',
-      color: '#D1FAE5',
-      iconColor: '#059669',
+      color: theme.colors.success + '15',
+      iconColor: theme.colors.success,
     },
   ];
 
@@ -118,8 +118,11 @@ export default function AuthIndex() {
     <TouchableOpacity
       style={[
         styles.moodChip,
-        { backgroundColor: isSelected ? mood.color : '#FFFFFF' },
-        isSelected && { borderColor: mood.textColor, borderWidth: 2 }
+        { 
+          backgroundColor: isSelected ? mood.color : theme.colors.surface,
+          borderColor: isSelected ? mood.textColor : theme.colors.border,
+        },
+        isSelected && { borderWidth: 2 }
       ]}
       onPress={onPress}
       activeOpacity={0.7}
@@ -127,7 +130,7 @@ export default function AuthIndex() {
       <Text style={styles.moodEmoji}>{mood.emoji}</Text>
       <Text style={[
         styles.moodLabel,
-        { color: isSelected ? mood.textColor : '#6B7280' }
+        { color: isSelected ? mood.textColor : theme.colors.textSecondary }
       ]}>
         {mood.label}
       </Text>
@@ -146,17 +149,20 @@ export default function AuthIndex() {
         <feature.icon size={28} color={feature.iconColor} />
       </View>
       <View style={styles.featureContent}>
-        <Text style={styles.featureTitle}>{feature.title}</Text>
-        <Text style={styles.featureDescription}>{feature.description}</Text>
+        <Text style={[styles.featureTitle, { color: theme.colors.text }]}>{feature.title}</Text>
+        <Text style={[styles.featureDescription, { color: theme.colors.textSecondary }]}>{feature.description}</Text>
       </View>
     </Animated.View>
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Fondo con gradiente sutil */}
       <LinearGradient
-        colors={['#FAFAFA', '#F3F4F6', '#FAFAFA']}
+        colors={isDark 
+          ? [theme.colors.background, theme.colors.surface, theme.colors.background]
+          : [theme.colors.background, '#F3F4F6', theme.colors.background]
+        }
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
@@ -164,14 +170,14 @@ export default function AuthIndex() {
 
       {/* Botón de tema */}
       <TouchableOpacity
-        style={styles.themeButton}
+        style={[styles.themeButton, { backgroundColor: theme.colors.surface }]}
         onPress={toggleTheme}
         activeOpacity={0.7}
       >
         {isDark ? (
-          <Sun size={20} color="#F59E0B" />
+          <Sun size={20} color={theme.colors.accent} />
         ) : (
-          <Moon size={20} color="#6366F1" />
+          <Moon size={20} color={theme.colors.primary} />
         )}
       </TouchableOpacity>
 
@@ -183,28 +189,28 @@ export default function AuthIndex() {
           {/* Header con elemento de respiración */}
           <Animated.View style={[styles.header, fadeInStyle]}>
             <Animated.View style={[styles.breathingContainer, breathingStyle, floatingStyle]}>
-              <View style={styles.breathingCircle}>
-                <Heart size={32} color="#EC4899" />
+              <View style={[styles.breathingCircle, { backgroundColor: theme.colors.primary + '20' }]}>
+                <Heart size={32} color={theme.colors.primary} />
               </View>
               <View style={styles.sparkleContainer}>
-                <Sparkles size={16} color="#F59E0B" style={styles.sparkle1} />
-                <Sparkles size={12} color="#8B5CF6" style={styles.sparkle2} />
-                <Sparkles size={14} color="#06B6D4" style={styles.sparkle3} />
+                <Sparkles size={16} color={theme.colors.accent} style={styles.sparkle1} />
+                <Sparkles size={12} color={theme.colors.secondary} style={styles.sparkle2} />
+                <Sparkles size={14} color={theme.colors.success} style={styles.sparkle3} />
               </View>
             </Animated.View>
 
-            <Text style={styles.welcomeText}>
-              {isFirstLaunch ? '¡Bienvenido!' : 'Bienvenido de vuelta'}
+            <Text style={[styles.welcomeText, { color: theme.colors.textSecondary }]}>
+              ¡Bienvenido!
             </Text>
-            <Text style={styles.mainTitle}>CarreraGuía</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.mainTitle, { color: theme.colors.text }]}>CarreraGuía</Text>
+            <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
               Tu compañero inteligente para descubrir tu vocación y cuidar tu bienestar emocional
             </Text>
           </Animated.View>
 
           {/* Selector de estado emocional */}
           <Animated.View style={[styles.moodSection, fadeInStyle]}>
-            <Text style={styles.sectionTitle}>¿Cómo te sientes hoy?</Text>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>¿Cómo te sientes hoy?</Text>
             <View style={styles.moodGrid}>
               {moods.map((mood, index) => (
                 <MoodChip
@@ -217,50 +223,20 @@ export default function AuthIndex() {
             </View>
           </Animated.View>
 
-          {/* Tarjeta de progreso emocional */}
-          <Animated.View style={[styles.progressCard, fadeInStyle]}>
-            <View style={styles.progressHeader}>
-              <View>
-                <Text style={styles.progressTitle}>Tu Bienestar</Text>
-                <Text style={styles.progressSubtitle}>Seguimiento diario de tu estado emocional</Text>
-              </View>
-              <View style={styles.progressIcon}>
-                <Star size={24} color="#F59E0B" fill="#F59E0B" />
-              </View>
-            </View>
-            
-            <View style={styles.progressStats}>
-              <View style={styles.progressStat}>
-                <Text style={styles.progressNumber}>7</Text>
-                <Text style={styles.progressLabel}>Días de racha</Text>
-              </View>
-              <View style={styles.progressDivider} />
-              <View style={styles.progressStat}>
-                <Text style={styles.progressNumber}>85%</Text>
-                <Text style={styles.progressLabel}>Bienestar</Text>
-              </View>
-              <View style={styles.progressDivider} />
-              <View style={styles.progressStat}>
-                <Text style={styles.progressNumber}>12</Text>
-                <Text style={styles.progressLabel}>Sesiones</Text>
-              </View>
-            </View>
-          </Animated.View>
-
           {/* Características principales */}
           <Animated.View style={[styles.featuresSection, fadeInStyle]}>
-            <Text style={styles.sectionTitle}>¿Qué puedes hacer?</Text>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>¿Qué puedes hacer?</Text>
             {features.map((feature, index) => (
               <FeatureCard key={index} feature={feature} index={index} />
             ))}
           </Animated.View>
 
           {/* Frase inspiracional */}
-          <Animated.View style={[styles.quoteCard, fadeInStyle]}>
-            <Text style={styles.quoteText}>
+          <Animated.View style={[styles.quoteCard, { backgroundColor: theme.colors.primary + '10' }, fadeInStyle]}>
+            <Text style={[styles.quoteText, { color: theme.colors.primary }]}>
               "{inspirationalQuotes[currentQuote].text}"
             </Text>
-            <Text style={styles.quoteAuthor}>
+            <Text style={[styles.quoteAuthor, { color: theme.colors.primary }]}>
               - {inspirationalQuotes[currentQuote].author}
             </Text>
           </Animated.View>
@@ -273,7 +249,7 @@ export default function AuthIndex() {
               activeOpacity={0.8}
             >
               <LinearGradient
-                colors={['#6366F1', '#8B5CF6']}
+                colors={theme.colors.gradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.gradientButton}
@@ -284,11 +260,14 @@ export default function AuthIndex() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.secondaryButton}
+              style={[styles.secondaryButton, { 
+                backgroundColor: theme.colors.surface,
+                borderColor: theme.colors.border 
+              }]}
               onPress={() => router.push('/(auth)/login')}
               activeOpacity={0.7}
             >
-              <Text style={styles.secondaryButtonText}>Ya tengo cuenta</Text>
+              <Text style={[styles.secondaryButtonText, { color: theme.colors.primary }]}>Ya tengo cuenta</Text>
             </TouchableOpacity>
           </Animated.View>
         </ScrollView>
@@ -308,7 +287,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
@@ -338,10 +316,9 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#FDF2F8',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#EC4899',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.2,
     shadowRadius: 16,
@@ -370,20 +347,17 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: 20,
     fontFamily: 'Inter_600SemiBold',
-    color: '#6B7280',
     marginBottom: 8,
   },
   mainTitle: {
     fontSize: 36,
     fontFamily: 'Inter_700Bold',
-    color: '#1F2937',
     marginBottom: 16,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
     fontFamily: 'Inter_400Regular',
-    color: '#6B7280',
     textAlign: 'center',
     lineHeight: 24,
     paddingHorizontal: 20,
@@ -394,7 +368,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontFamily: 'Inter_600SemiBold',
-    color: '#1F2937',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -410,13 +383,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 24,
-    backgroundColor: '#FFFFFF',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
     minWidth: 100,
+    borderWidth: 1,
   },
   moodEmoji: {
     fontSize: 18,
@@ -425,68 +398,6 @@ const styles = StyleSheet.create({
   moodLabel: {
     fontSize: 14,
     fontFamily: 'Inter_500Medium',
-  },
-  progressCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 24,
-    marginBottom: 32,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  progressHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  progressTitle: {
-    fontSize: 18,
-    fontFamily: 'Inter_600SemiBold',
-    color: '#1F2937',
-  },
-  progressSubtitle: {
-    fontSize: 14,
-    fontFamily: 'Inter_400Regular',
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  progressIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#FEF3C7',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  progressStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  },
-  progressStat: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  progressNumber: {
-    fontSize: 24,
-    fontFamily: 'Inter_700Bold',
-    color: '#1F2937',
-  },
-  progressLabel: {
-    fontSize: 12,
-    fontFamily: 'Inter_400Regular',
-    color: '#6B7280',
-    marginTop: 4,
-    textAlign: 'center',
-  },
-  progressDivider: {
-    width: 1,
-    height: 40,
-    backgroundColor: '#E5E7EB',
   },
   featuresSection: {
     marginBottom: 32,
@@ -517,27 +428,22 @@ const styles = StyleSheet.create({
   featureTitle: {
     fontSize: 16,
     fontFamily: 'Inter_600SemiBold',
-    color: '#1F2937',
     marginBottom: 4,
   },
   featureDescription: {
     fontSize: 14,
     fontFamily: 'Inter_400Regular',
-    color: '#6B7280',
     lineHeight: 20,
   },
   quoteCard: {
-    backgroundColor: '#F0F9FF',
     borderRadius: 16,
     padding: 24,
     marginBottom: 32,
     borderLeftWidth: 4,
-    borderLeftColor: '#0EA5E9',
   },
   quoteText: {
     fontSize: 16,
     fontFamily: 'Inter_400Regular',
-    color: '#0C4A6E',
     lineHeight: 24,
     marginBottom: 12,
     fontStyle: 'italic',
@@ -545,7 +451,6 @@ const styles = StyleSheet.create({
   quoteAuthor: {
     fontSize: 14,
     fontFamily: 'Inter_600SemiBold',
-    color: '#0C4A6E',
     textAlign: 'right',
   },
   actionButtons: {
@@ -574,17 +479,14 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   secondaryButton: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     paddingVertical: 18,
     paddingHorizontal: 32,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#E5E7EB',
   },
   secondaryButtonText: {
     fontSize: 16,
     fontFamily: 'Inter_600SemiBold',
-    color: '#6366F1',
   },
 });

@@ -20,7 +20,7 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 export default function LoginScreen() {
   const router = useRouter();
   const { signIn } = useAuth();
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -77,11 +77,10 @@ export default function LoginScreen() {
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       {/* Fondo con gradiente */}
       <LinearGradient
-        colors={[
-          theme.colors.primary + '10',
-          theme.colors.background,
-          theme.colors.secondary + '05',
-        ]}
+        colors={isDark 
+          ? [theme.colors.background, theme.colors.surface, theme.colors.background]
+          : [theme.colors.primary + '10', theme.colors.background, theme.colors.secondary + '05']
+        }
         style={StyleSheet.absoluteFill}
       />
 
@@ -97,10 +96,10 @@ export default function LoginScreen() {
             style={styles.backButton}
           />
           <Text style={[styles.title, { color: theme.colors.text }]}>
-            Bienvenido de vuelta
+            Iniciar Sesión
           </Text>
           <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-            Inicia sesión para continuar
+            Ingresa a tu cuenta para continuar
           </Text>
         </View>
 
@@ -109,7 +108,13 @@ export default function LoginScreen() {
           <NeumorphicCard style={styles.formCard}>
             <View style={styles.inputContainer}>
               <Text style={[styles.label, { color: theme.colors.text }]}>Email</Text>
-              <View style={[styles.inputWrapper, { borderColor: errors.email ? theme.colors.error : theme.colors.border }]}>
+              <View style={[
+                styles.inputWrapper, 
+                { 
+                  borderColor: errors.email ? theme.colors.error : theme.colors.border,
+                  backgroundColor: theme.colors.surface 
+                }
+              ]}>
                 <Mail size={20} color={theme.colors.textMuted} style={styles.inputIcon} />
                 <TextInput
                   style={[styles.input, { color: theme.colors.text }]}
@@ -126,7 +131,13 @@ export default function LoginScreen() {
 
             <View style={styles.inputContainer}>
               <Text style={[styles.label, { color: theme.colors.text }]}>Contraseña</Text>
-              <View style={[styles.inputWrapper, { borderColor: errors.password ? theme.colors.error : theme.colors.border }]}>
+              <View style={[
+                styles.inputWrapper, 
+                { 
+                  borderColor: errors.password ? theme.colors.error : theme.colors.border,
+                  backgroundColor: theme.colors.surface 
+                }
+              ]}>
                 <Lock size={20} color={theme.colors.textMuted} style={styles.inputIcon} />
                 <TextInput
                   style={[styles.input, { color: theme.colors.text }]}
@@ -222,7 +233,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 16,
     height: 56,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   inputIcon: {
     marginRight: 12,
