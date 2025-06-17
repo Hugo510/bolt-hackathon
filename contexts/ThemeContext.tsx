@@ -20,9 +20,19 @@ interface Colors {
   gradient: string[];
 }
 
+interface AccessibilityColors {
+  highContrast: {
+    text: string;
+    background: string;
+    border: string;
+  };
+  focus: string;
+  selection: string;
+}
+
 interface ThemeContextType {
   theme: {
-    colors: Colors;
+    colors: Colors & { accessibility: AccessibilityColors };
     borderRadius: {
       sm: number;
       md: number;
@@ -34,43 +44,77 @@ interface ThemeContextType {
         fontFamily: string;
       };
     };
+    spacing: {
+      touchTarget: number;
+      minTouchTarget: number;
+    };
+    accessibility: {
+      minContrastRatio: number;
+      focusIndicatorWidth: number;
+    };
   };
   isDark: boolean;
   toggleTheme: () => void;
+  isHighContrast: boolean;
+  toggleHighContrast: () => void;
 }
 
 const lightColors: Colors = {
-  primary: '#6366f1',
-  secondary: '#06b6d4',
-  accent: '#f59e0b',
-  background: '#f9fafb',
-  surface: '#ffffff',
-  text: '#1f2937',
-  textSecondary: '#6b7280',
-  textMuted: '#9ca3af',
-  border: '#e5e7eb',
-  error: '#ef4444',
-  success: '#10b981',
-  warning: '#f59e0b',
+  primary: '#4338ca', // Mejorado contraste
+  secondary: '#0891b2', // Mejorado contraste
+  accent: '#d97706', // Mejorado contraste
+  background: '#ffffff',
+  surface: '#f8fafc',
+  text: '#0f172a', // Alto contraste
+  textSecondary: '#475569', // Mejorado contraste
+  textMuted: '#64748b', // Mejorado contraste
+  border: '#e2e8f0',
+  error: '#dc2626', // Alto contraste
+  success: '#059669', // Alto contraste
+  warning: '#d97706', // Alto contraste
   shadow: '#000000',
-  gradient: ['#6366f1', '#8b5cf6'],
+  gradient: ['#4338ca', '#7c3aed'],
 };
 
 const darkColors: Colors = {
-  primary: '#8b5cf6',
+  primary: '#6366f1', // Mejorado para modo oscuro
   secondary: '#06b6d4',
   accent: '#fbbf24',
-  background: '#111827',
-  surface: '#1f2937',
-  text: '#f9fafb',
-  textSecondary: '#d1d5db',
-  textMuted: '#9ca3af',
-  border: '#374151',
-  error: '#f87171',
+  background: '#0f172a',
+  surface: '#1e293b',
+  text: '#f8fafc', // Alto contraste
+  textSecondary: '#cbd5e1', // Mejorado contraste
+  textMuted: '#94a3b8', // Mejorado contraste
+  border: '#334155',
+  error: '#f87171', // Mejorado para modo oscuro
   success: '#34d399',
   warning: '#fbbf24',
   shadow: '#000000',
-  gradient: ['#8b5cf6', '#06b6d4'],
+  gradient: ['#6366f1', '#06b6d4'],
+};
+
+const highContrastLight: Colors = {
+  ...lightColors,
+  primary: '#000080', // Azul muy oscuro
+  text: '#000000', // Negro puro
+  textSecondary: '#333333', // Gris muy oscuro
+  background: '#ffffff', // Blanco puro
+  surface: '#ffffff',
+  border: '#000000',
+  error: '#cc0000', // Rojo muy oscuro
+  success: '#006600', // Verde muy oscuro
+};
+
+const highContrastDark: Colors = {
+  ...darkColors,
+  primary: '#66b3ff', // Azul muy claro
+  text: '#ffffff', // Blanco puro
+  textSecondary: '#cccccc', // Gris muy claro
+  background: '#000000', // Negro puro
+  surface: '#000000',
+  border: '#ffffff',
+  error: '#ff6666', // Rojo muy claro
+  success: '#66ff66', // Verde muy claro
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -78,11 +122,32 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const systemColorScheme = useColorScheme();
   const [themeMode, setThemeMode] = useState<Theme>('system');
+  const [isHighContrast, setIsHighContrast] = useState(false);
 
   const isDark = themeMode === 'system' ? systemColorScheme === 'dark' : themeMode === 'dark';
 
+  const getColors = (): Colors => {
+    if (isHighContrast) {
+      return isDark ? highContrastDark : highContrastLight;
+    }
+    return isDark ? darkColors : lightColors;
+  };
+
+  const colors = getColors();
+
   const theme = {
-    colors: isDark ? darkColors : lightColors,
+    colors: {
+      ...colors,
+      accessibility: {
+        highContrast: {
+          text: isHighContrast ? (isDark ? '#ffffff' : '#000000') : colors.text,
+          background: isHighContrast ? (isDark ? '#000000' : '#ffffff') : colors.background,
+          border: isHighContrast ? (isDark ? '#ffffff' : '#000000') : colors.border,
+        },
+        focus: '#0066cc', // Color de enfoque accesible
+        selection: isDark ? '#4338ca' : '#6366f1',
+      },
+    },
     borderRadius: {
       sm: 8,
       md: 12,
@@ -94,6 +159,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         fontFamily: 'Inter_400Regular',
       },
     },
+    spacing: {
+      touchTarget: 48, // Tamaño mínimo recomendado por WCAG
+      minTouchTarget: 44, // Tamaño mínimo absoluto
+    },
+    accessibility: {
+      minContrastRatio: 4.5, // WCAG AA
+      focusIndicatorWidth: 3,
+    },
   };
 
   const toggleTheme = () => {
@@ -104,8 +177,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const toggleHighContrast = () => {
+    setIsHighContrast(prev => !prev);
+  };
+
   return (
-    <ThemeContext.Provider value={{ theme, isDark, toggleTheme }}>
+    <ThemeContext.Provider value={{ 
+      theme, 
+      isDark, 
+      toggleTheme, 
+      isHighContrast, 
+      toggleHighContrast 
+    }}>
       {children}
     </ThemeContext.Provider>
   );
