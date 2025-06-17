@@ -2,9 +2,16 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Brain, ArrowRight, Clock, Users, Star } from 'lucide-react-native';
 import { useState } from 'react';
+import FadeInView from '@/components/animations/FadeInView';
+import ScaleInView from '@/components/animations/ScaleInView';
+import StaggeredList from '@/components/animations/StaggeredList';
+import ProgressBar from '@/components/animations/ProgressBar';
+import AnimatedButton from '@/components/animations/AnimatedButton';
+import EmotionChip from '@/components/animations/EmotionChip';
 
 export default function TestScreen() {
   const [selectedTest, setSelectedTest] = useState<number | null>(null);
+  const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
 
   const tests = [
     {
@@ -16,6 +23,7 @@ export default function TestScreen() {
       color: '#E0E7FF',
       iconColor: '#6366F1',
       completed: false,
+      progress: 0,
     },
     {
       id: 2,
@@ -26,6 +34,7 @@ export default function TestScreen() {
       color: '#DBEAFE',
       iconColor: '#3B82F6',
       completed: true,
+      progress: 1,
     },
     {
       id: 3,
@@ -36,139 +45,166 @@ export default function TestScreen() {
       color: '#D1FAE5',
       iconColor: '#10B981',
       completed: false,
+      progress: 0.3,
     },
   ];
 
   const emotions = [
-    { emoji: '😊', label: 'Motivado', selected: false },
-    { emoji: '🤔', label: 'Curioso', selected: true },
-    { emoji: '😌', label: 'Tranquilo', selected: false },
-    { emoji: '😟', label: 'Ansioso', selected: false },
-    { emoji: '😴', label: 'Cansado', selected: false },
+    { emoji: '😊', label: 'Motivado', color: '#10B981' },
+    { emoji: '🤔', label: 'Curioso', color: '#8B5CF6' },
+    { emoji: '😌', label: 'Tranquilo', color: '#3B82F6' },
+    { emoji: '😟', label: 'Ansioso', color: '#F59E0B' },
+    { emoji: '😴', label: 'Cansado', color: '#6B7280' },
   ];
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Tests Vocacionales</Text>
-          <Text style={styles.subtitle}>Descubre tu camino profesional ideal</Text>
-        </View>
+        <FadeInView delay={0}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Tests Vocacionales</Text>
+            <Text style={styles.subtitle}>Descubre tu camino profesional ideal</Text>
+          </View>
+        </FadeInView>
 
         {/* Mood Check */}
-        <View style={styles.moodSection}>
-          <Text style={styles.sectionTitle}>¿Cómo te sientes antes de empezar?</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.emotionsContainer}>
-            {emotions.map((emotion, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.emotionChip,
-                  emotion.selected && styles.emotionChipSelected
-                ]}
-              >
-                <Text style={styles.emotionEmoji}>{emotion.emoji}</Text>
-                <Text style={[
-                  styles.emotionLabel,
-                  emotion.selected && styles.emotionLabelSelected
-                ]}>
-                  {emotion.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
+        <FadeInView delay={200}>
+          <View style={styles.moodSection}>
+            <Text style={styles.sectionTitle}>¿Cómo te sientes antes de empezar?</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.emotionsContainer}>
+              {emotions.map((emotion, index) => (
+                <EmotionChip
+                  key={index}
+                  emoji={emotion.emoji}
+                  label={emotion.label}
+                  selected={selectedEmotion === emotion.label}
+                  onPress={() => setSelectedEmotion(selectedEmotion === emotion.label ? null : emotion.label)}
+                  color={emotion.color}
+                />
+              ))}
+            </ScrollView>
+          </View>
+        </FadeInView>
 
         {/* Progress Overview */}
-        <View style={styles.progressSection}>
-          <Text style={styles.sectionTitle}>Tu Progreso</Text>
-          <View style={styles.progressCard}>
-            <View style={styles.progressStats}>
-              <View style={styles.progressStat}>
-                <Text style={styles.progressNumber}>1</Text>
-                <Text style={styles.progressLabel}>Completado</Text>
-              </View>
-              <View style={styles.progressStat}>
-                <Text style={styles.progressNumber}>2</Text>
-                <Text style={styles.progressLabel}>Pendientes</Text>
-              </View>
-              <View style={styles.progressStat}>
-                <Text style={styles.progressNumber}>85%</Text>
-                <Text style={styles.progressLabel}>Compatibilidad</Text>
+        <ScaleInView delay={400}>
+          <View style={styles.progressSection}>
+            <Text style={styles.sectionTitle}>Tu Progreso</Text>
+            <View style={styles.progressCard}>
+              <View style={styles.progressStats}>
+                <StaggeredList staggerDelay={100} initialDelay={600}>
+                  <View style={styles.progressStat}>
+                    <Text style={styles.progressNumber}>1</Text>
+                    <Text style={styles.progressLabel}>Completado</Text>
+                  </View>
+                  <View style={styles.progressStat}>
+                    <Text style={styles.progressNumber}>2</Text>
+                    <Text style={styles.progressLabel}>Pendientes</Text>
+                  </View>
+                  <View style={styles.progressStat}>
+                    <Text style={styles.progressNumber}>85%</Text>
+                    <Text style={styles.progressLabel}>Compatibilidad</Text>
+                  </View>
+                </StaggeredList>
               </View>
             </View>
           </View>
-        </View>
+        </ScaleInView>
 
         {/* Available Tests */}
-        <View style={styles.testsSection}>
-          <Text style={styles.sectionTitle}>Tests Disponibles</Text>
-          {tests.map((test) => (
-            <TouchableOpacity
-              key={test.id}
-              style={[
-                styles.testCard,
-                selectedTest === test.id && styles.testCardSelected
-              ]}
-              onPress={() => setSelectedTest(test.id)}
-            >
-              <View style={styles.testHeader}>
-                <View style={[styles.testIcon, { backgroundColor: test.color }]}>
-                  <Brain size={24} color={test.iconColor} />
-                </View>
-                <View style={styles.testInfo}>
-                  <View style={styles.testTitleRow}>
-                    <Text style={styles.testTitle}>{test.title}</Text>
-                    {test.completed && (
-                      <View style={styles.completedBadge}>
-                        <Star size={12} color="#F59E0B" fill="#F59E0B" />
+        <FadeInView delay={600}>
+          <View style={styles.testsSection}>
+            <Text style={styles.sectionTitle}>Tests Disponibles</Text>
+            <StaggeredList staggerDelay={150} initialDelay={800}>
+              {tests.map((test) => (
+                <AnimatedButton
+                  key={test.id}
+                  onPress={() => setSelectedTest(selectedTest === test.id ? null : test.id)}
+                  variant="ghost"
+                >
+                  <View style={[
+                    styles.testCard,
+                    selectedTest === test.id && styles.testCardSelected
+                  ]}>
+                    <View style={styles.testHeader}>
+                      <ScaleInView delay={0}>
+                        <View style={[styles.testIcon, { backgroundColor: test.color }]}>
+                          <Brain size={24} color={test.iconColor} />
+                        </View>
+                      </ScaleInView>
+                      <View style={styles.testInfo}>
+                        <View style={styles.testTitleRow}>
+                          <Text style={styles.testTitle}>{test.title}</Text>
+                          {test.completed && (
+                            <ScaleInView delay={100}>
+                              <View style={styles.completedBadge}>
+                                <Star size={12} color="#F59E0B" fill="#F59E0B" />
+                              </View>
+                            </ScaleInView>
+                          )}
+                        </View>
+                        <Text style={styles.testDescription}>{test.description}</Text>
+                      </View>
+                    </View>
+                    
+                    {test.progress > 0 && (
+                      <View style={styles.testProgressContainer}>
+                        <ProgressBar progress={test.progress} delay={200} />
+                        <Text style={styles.testProgressText}>
+                          {Math.round(test.progress * 100)}% completado
+                        </Text>
                       </View>
                     )}
-                  </View>
-                  <Text style={styles.testDescription}>{test.description}</Text>
-                </View>
-              </View>
-              
-              <View style={styles.testMeta}>
-                <View style={styles.testMetaItem}>
-                  <Clock size={16} color="#6B7280" />
-                  <Text style={styles.testMetaText}>{test.duration}</Text>
-                </View>
-                <View style={styles.testMetaItem}>
-                  <Users size={16} color="#6B7280" />
-                  <Text style={styles.testMetaText}>{test.questions} preguntas</Text>
-                </View>
-              </View>
+                    
+                    <View style={styles.testMeta}>
+                      <View style={styles.testMetaItem}>
+                        <Clock size={16} color="#6B7280" />
+                        <Text style={styles.testMetaText}>{test.duration}</Text>
+                      </View>
+                      <View style={styles.testMetaItem}>
+                        <Users size={16} color="#6B7280" />
+                        <Text style={styles.testMetaText}>{test.questions} preguntas</Text>
+                      </View>
+                    </View>
 
-              {selectedTest === test.id && (
-                <TouchableOpacity style={styles.startButton}>
-                  <Text style={styles.startButtonText}>
-                    {test.completed ? 'Ver Resultados' : 'Comenzar Test'}
-                  </Text>
-                  <ArrowRight size={20} color="#FFFFFF" />
-                </TouchableOpacity>
-              )}
-            </TouchableOpacity>
-          ))}
-        </View>
+                    {selectedTest === test.id && (
+                      <FadeInView delay={0}>
+                        <View style={styles.startButton}>
+                          <Text style={styles.startButtonText}>
+                            {test.completed ? 'Ver Resultados' : test.progress > 0 ? 'Continuar Test' : 'Comenzar Test'}
+                          </Text>
+                          <ArrowRight size={20} color="#FFFFFF" />
+                        </View>
+                      </FadeInView>
+                    )}
+                  </View>
+                </AnimatedButton>
+              ))}
+            </StaggeredList>
+          </View>
+        </FadeInView>
 
         {/* Tips Section */}
-        <View style={styles.tipsSection}>
-          <Text style={styles.sectionTitle}>Consejos para el Test</Text>
-          <View style={styles.tipCard}>
-            <Text style={styles.tipTitle}>💡 Responde con honestidad</Text>
-            <Text style={styles.tipText}>
-              No hay respuestas correctas o incorrectas. Sé auténtico contigo mismo.
-            </Text>
+        <FadeInView delay={1000}>
+          <View style={styles.tipsSection}>
+            <Text style={styles.sectionTitle}>Consejos para el Test</Text>
+            <StaggeredList staggerDelay={100} initialDelay={1200}>
+              <View style={styles.tipCard}>
+                <Text style={styles.tipTitle}>💡 Responde con honestidad</Text>
+                <Text style={styles.tipText}>
+                  No hay respuestas correctas o incorrectas. Sé auténtico contigo mismo.
+                </Text>
+              </View>
+              <View style={styles.tipCard}>
+                <Text style={styles.tipTitle}>⏰ Tómate tu tiempo</Text>
+                <Text style={styles.tipText}>
+                  Reflexiona sobre cada pregunta, pero no te obsesiones con la respuesta perfecta.
+                </Text>
+              </View>
+            </StaggeredList>
           </View>
-          <View style={styles.tipCard}>
-            <Text style={styles.tipTitle}>⏰ Tómate tu tiempo</Text>
-            <Text style={styles.tipText}>
-              Reflexiona sobre cada pregunta, pero no te obsesiones con la respuesta perfecta.
-            </Text>
-          </View>
-        </View>
+        </FadeInView>
       </ScrollView>
     </SafeAreaView>
   );
@@ -207,33 +243,6 @@ const styles = StyleSheet.create({
   },
   emotionsContainer: {
     flexDirection: 'row',
-  },
-  emotionChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 12,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  emotionChipSelected: {
-    borderColor: '#6366F1',
-    backgroundColor: '#E0E7FF',
-  },
-  emotionEmoji: {
-    fontSize: 16,
-    marginRight: 6,
-  },
-  emotionLabel: {
-    fontSize: 14,
-    fontFamily: 'Inter-Medium',
-    color: '#6B7280',
-  },
-  emotionLabelSelected: {
-    color: '#6366F1',
   },
   progressSection: {
     paddingHorizontal: 20,
@@ -322,6 +331,16 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     color: '#6B7280',
     lineHeight: 20,
+  },
+  testProgressContainer: {
+    marginBottom: 16,
+  },
+  testProgressText: {
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
+    color: '#6366F1',
+    marginTop: 8,
+    textAlign: 'right',
   },
   testMeta: {
     flexDirection: 'row',

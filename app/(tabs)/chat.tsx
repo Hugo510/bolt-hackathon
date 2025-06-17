@@ -2,6 +2,19 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Keyboa
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Send, Bot, Heart, Smile, Frown, Meh, Plus } from 'lucide-react-native';
 import { useState, useRef, useEffect } from 'react';
+import FadeInView from '@/components/animations/FadeInView';
+import ScaleInView from '@/components/animations/ScaleInView';
+import StaggeredList from '@/components/animations/StaggeredList';
+import EmotionChip from '@/components/animations/EmotionChip';
+import BreathingCircle from '@/components/animations/BreathingCircle';
+import TypingText from '@/components/animations/TypingText';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  interpolate,
+} from 'react-native-reanimated';
 
 interface Message {
   id: string;
@@ -9,6 +22,7 @@ interface Message {
   isUser: boolean;
   timestamp: Date;
   emotion?: string;
+  isTyping?: boolean;
 }
 
 export default function ChatScreen() {
@@ -22,6 +36,7 @@ export default function ChatScreen() {
   ]);
   const [inputText, setInputText] = useState('');
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const [showBreathing, setShowBreathing] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
   const moods = [
@@ -58,6 +73,17 @@ export default function ChatScreen() {
     setInputText('');
     setSelectedMood(null);
 
+    // Add typing indicator
+    const typingMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      text: '',
+      isUser: false,
+      timestamp: new Date(),
+      isTyping: true,
+    };
+
+    setMessages(prev => [...prev, typingMessage]);
+
     // Simulate AI response
     setTimeout(() => {
       const responses = [
@@ -68,19 +94,68 @@ export default function ChatScreen() {
       ];
 
       const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: (Date.now() + 2).toString(),
         text: responses[Math.floor(Math.random() * responses.length)],
         isUser: false,
         timestamp: new Date(),
       };
 
-      setMessages(prev => [...prev, aiMessage]);
-    }, 1000);
+      setMessages(prev => prev.filter(m => !m.isTyping).concat([aiMessage]));
+    }, 2000);
   };
 
   const selectQuickResponse = (response: string) => {
     sendMessage(response);
   };
+
+  const MessageBubble = ({ message, index }: { message: Message; index: number }) => (
+    <FadeInView delay={index * 100}>
+      <View
+        style={[
+          styles.messageContainer,
+          message.isUser ? styles.userMessageContainer : styles.aiMessageContainer
+        ]}
+      >
+        {!message.isUser && (
+          <ScaleInView delay={index * 100 + 50}>
+            <View style={styles.aiAvatar}>
+              <Bot size={16} color="#6366F1" />
+            </View>
+          </ScaleInView>
+        )}
+        <View
+          style={[
+            styles.messageBubble,
+            message.isUser ? styles.userMessage : styles.aiMessage
+          ]}
+        >
+          {message.isTyping ? (
+            <TypingText
+              text="Escribiendo..."
+              speed={100}
+              style={[styles.messageText, styles.aiMessageText]}
+            />
+          ) : (
+            <Text style={[
+              styles.messageText,
+              message.isUser ? styles.userMessageText : styles.aiMessageText
+            ]}>
+              {message.text}
+            </Text>
+          )}
+          {message.emotion && (
+            <ScaleInView delay={200}>
+              <View style={styles.emotionTag}>
+                <Text style={styles.emotionTagText}>
+                  {moods.find(m => m.label === message.emotion)?.emoji} {message.emotion}
+                </Text>
+              </View>
+            </ScaleInView>
+          )}
+        </View>
+      </View>
+    </FadeInView>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -89,45 +164,56 @@ export default function ChatScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerContent}>
-            <View style={styles.botIcon}>
-              <Bot size={24} color="#6366F1" />
+        <FadeInView delay={0}>
+          <View style={styles.header}>
+            <View style={styles.headerContent}>
+              <ScaleInView delay={100}>
+                <View style={styles.botIcon}>
+                  <Bot size={24} color="#6366F1" />
+                </View>
+              </ScaleInView>
+              <View>
+                <Text style={styles.headerTitle}>Apoyo Emocional</Text>
+                <Text style={styles.headerSubtitle}>Asistente IA • En línea</Text>
+              </View>
             </View>
-            <View>
-              <Text style={styles.headerTitle}>Apoyo Emocional</Text>
-              <Text style={styles.headerSubtitle}>Asistente IA • En línea</Text>
-            </View>
+            <TouchableOpacity 
+              style={styles.breathingButton}
+              onPress={() => setShowBreathing(!showBreathing)}
+            >
+              <Heart size={20} color="#EF4444" />
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.moodButton}>
-            <Heart size={20} color="#EF4444" />
-          </TouchableOpacity>
-        </View>
+        </FadeInView>
+
+        {/* Breathing Exercise */}
+        {showBreathing && (
+          <FadeInView delay={0}>
+            <View style={styles.breathingSection}>
+              <BreathingCircle text="Respira" />
+              <Text style={styles.breathingText}>Inhala... Exhala... Relájate</Text>
+            </View>
+          </FadeInView>
+        )}
 
         {/* Mood Selector */}
-        <View style={styles.moodSection}>
-          <Text style={styles.moodTitle}>¿Cómo te sientes?</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.moodContainer}>
-            {moods.map((mood, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.moodChip,
-                  selectedMood === mood.label && { backgroundColor: mood.color + '20', borderColor: mood.color }
-                ]}
-                onPress={() => setSelectedMood(selectedMood === mood.label ? null : mood.label)}
-              >
-                <Text style={styles.moodEmoji}>{mood.emoji}</Text>
-                <Text style={[
-                  styles.moodLabel,
-                  selectedMood === mood.label && { color: mood.color }
-                ]}>
-                  {mood.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
+        <FadeInView delay={200}>
+          <View style={styles.moodSection}>
+            <Text style={styles.moodTitle}>¿Cómo te sientes?</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.moodContainer}>
+              {moods.map((mood, index) => (
+                <EmotionChip
+                  key={index}
+                  emoji={mood.emoji}
+                  label={mood.label}
+                  selected={selectedMood === mood.label}
+                  onPress={() => setSelectedMood(selectedMood === mood.label ? null : mood.label)}
+                  color={mood.color}
+                />
+              ))}
+            </ScrollView>
+          </View>
+        </FadeInView>
 
         {/* Messages */}
         <ScrollView 
@@ -135,90 +221,66 @@ export default function ChatScreen() {
           style={styles.messagesContainer}
           showsVerticalScrollIndicator={false}
         >
-          {messages.map((message) => (
-            <View
-              key={message.id}
-              style={[
-                styles.messageContainer,
-                message.isUser ? styles.userMessageContainer : styles.aiMessageContainer
-              ]}
-            >
-              {!message.isUser && (
-                <View style={styles.aiAvatar}>
-                  <Bot size={16} color="#6366F1" />
-                </View>
-              )}
-              <View
-                style={[
-                  styles.messageBubble,
-                  message.isUser ? styles.userMessage : styles.aiMessage
-                ]}
-              >
-                <Text style={[
-                  styles.messageText,
-                  message.isUser ? styles.userMessageText : styles.aiMessageText
-                ]}>
-                  {message.text}
-                </Text>
-                {message.emotion && (
-                  <View style={styles.emotionTag}>
-                    <Text style={styles.emotionTagText}>
-                      {moods.find(m => m.label === message.emotion)?.emoji} {message.emotion}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            </View>
+          {messages.map((message, index) => (
+            <MessageBubble key={message.id} message={message} index={index} />
           ))}
 
           {/* Quick Responses */}
           {messages.length === 1 && (
-            <View style={styles.quickResponsesContainer}>
-              <Text style={styles.quickResponsesTitle}>Respuestas rápidas:</Text>
-              {quickResponses.map((response, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.quickResponseButton}
-                  onPress={() => selectQuickResponse(response)}
-                >
-                  <Text style={styles.quickResponseText}>{response}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <FadeInView delay={800}>
+              <View style={styles.quickResponsesContainer}>
+                <Text style={styles.quickResponsesTitle}>Respuestas rápidas:</Text>
+                <StaggeredList staggerDelay={100} initialDelay={1000}>
+                  {quickResponses.map((response, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={styles.quickResponseButton}
+                      onPress={() => selectQuickResponse(response)}
+                    >
+                      <Text style={styles.quickResponseText}>{response}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </StaggeredList>
+              </View>
+            </FadeInView>
           )}
         </ScrollView>
 
         {/* Input */}
-        <View style={styles.inputContainer}>
-          <View style={styles.inputWrapper}>
-            <TextInput
-              style={styles.textInput}
-              value={inputText}
-              onChangeText={setInputText}
-              placeholder="Escribe tu mensaje..."
-              placeholderTextColor="#9CA3AF"
-              multiline
-              maxLength={500}
-            />
-            <TouchableOpacity
-              style={[
-                styles.sendButton,
-                inputText.trim() ? styles.sendButtonActive : styles.sendButtonInactive
-              ]}
-              onPress={() => sendMessage(inputText)}
-              disabled={!inputText.trim()}
-            >
-              <Send size={20} color={inputText.trim() ? "#FFFFFF" : "#9CA3AF"} />
-            </TouchableOpacity>
+        <FadeInView delay={400}>
+          <View style={styles.inputContainer}>
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.textInput}
+                value={inputText}
+                onChangeText={setInputText}
+                placeholder="Escribe tu mensaje..."
+                placeholderTextColor="#9CA3AF"
+                multiline
+                maxLength={500}
+              />
+              <TouchableOpacity
+                style={[
+                  styles.sendButton,
+                  inputText.trim() ? styles.sendButtonActive : styles.sendButtonInactive
+                ]}
+                onPress={() => sendMessage(inputText)}
+                disabled={!inputText.trim()}
+              >
+                <Send size={20} color={inputText.trim() ? "#FFFFFF" : "#9CA3AF"} />
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
+        </FadeInView>
 
         {/* Disclaimer */}
-        <View style={styles.disclaimer}>
-          <Text style={styles.disclaimerText}>
-            💡 Este es un chatbot de apoyo emocional. Para emergencias, contacta servicios profesionales.
-          </Text>
-        </View>
+        <FadeInView delay={600}>
+          <View style={styles.disclaimer}>
+            <Text style={styles.disclaimerText}>
+              💡 Este es un chatbot de apoyo emocional. Para emergencias, contacta servicios profesionales.
+            </Text>
+          </View>
+        </FadeInView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -262,13 +324,26 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     color: '#6B7280',
   },
-  moodButton: {
+  breathingButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
     backgroundColor: '#FEE2E2',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  breathingSection: {
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 20,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  breathingText: {
+    fontSize: 16,
+    fontFamily: 'Inter-Medium',
+    color: '#6B7280',
+    marginTop: 12,
   },
   moodSection: {
     backgroundColor: '#FFFFFF',
@@ -285,26 +360,6 @@ const styles = StyleSheet.create({
   },
   moodContainer: {
     flexDirection: 'row',
-  },
-  moodChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginRight: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  moodEmoji: {
-    fontSize: 16,
-    marginRight: 6,
-  },
-  moodLabel: {
-    fontSize: 14,
-    fontFamily: 'Inter-Medium',
-    color: '#6B7280',
   },
   messagesContainer: {
     flex: 1,

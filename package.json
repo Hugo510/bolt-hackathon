@@ -21,7 +21,9 @@
     "expo-font": "~13.1.0",
     "@expo-google-fonts/inter": "^0.2.3",
     "lucide-react-native": "^0.460.0",
-    "react-native-svg": "15.8.0"
+    "react-native-svg": "15.8.0",
+    "react-native-reanimated": "~3.16.1",
+    "react-native-gesture-handler": "~2.20.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

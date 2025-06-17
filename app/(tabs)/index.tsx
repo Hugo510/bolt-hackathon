@@ -2,9 +2,19 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Brain, Users, MessageCircle, BookOpen, Star, TrendingUp } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import FadeInView from '@/components/animations/FadeInView';
+import ScaleInView from '@/components/animations/ScaleInView';
+import StaggeredList from '@/components/animations/StaggeredList';
+import ProgressBar from '@/components/animations/ProgressBar';
+import AnimatedButton from '@/components/animations/AnimatedButton';
+import EmotionChip from '@/components/animations/EmotionChip';
+import TypingText from '@/components/animations/TypingText';
+import { useState } from 'react';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const [showTyping, setShowTyping] = useState(false);
 
   const quickActions = [
     {
@@ -36,98 +46,138 @@ export default function HomeScreen() {
     },
   ];
 
-  const moodEmojis = ['😊', '😌', '🤔', '😟', '😴'];
+  const moods = [
+    { emoji: '😊', label: 'Feliz', color: '#10B981' },
+    { emoji: '😌', label: 'Tranquilo', color: '#3B82F6' },
+    { emoji: '🤔', label: 'Pensativo', color: '#8B5CF6' },
+    { emoji: '😟', label: 'Preocupado', color: '#F59E0B' },
+    { emoji: '😴', label: 'Cansado', color: '#6B7280' },
+  ];
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>¡Hola, María! 👋</Text>
-            <Text style={styles.subtitle}>¿Cómo te sientes hoy?</Text>
+        <FadeInView delay={0}>
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.greeting}>¡Hola, María! 👋</Text>
+              <Text style={styles.subtitle}>¿Cómo te sientes hoy?</Text>
+            </View>
+            <ScaleInView delay={200}>
+              <View style={styles.profileContainer}>
+                <Image
+                  source={{ uri: 'https://images.pexels.com/photos/3769021/pexels-photo-3769021.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2' }}
+                  style={styles.profileImage}
+                />
+              </View>
+            </ScaleInView>
           </View>
-          <View style={styles.profileContainer}>
-            <Image
-              source={{ uri: 'https://images.pexels.com/photos/3769021/pexels-photo-3769021.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2' }}
-              style={styles.profileImage}
-            />
-          </View>
-        </View>
+        </FadeInView>
 
         {/* Mood Tracker */}
-        <View style={styles.moodSection}>
-          <Text style={styles.sectionTitle}>¿Cómo te sientes?</Text>
-          <View style={styles.moodContainer}>
-            {moodEmojis.map((emoji, index) => (
-              <TouchableOpacity key={index} style={styles.moodButton}>
-                <Text style={styles.moodEmoji}>{emoji}</Text>
-              </TouchableOpacity>
-            ))}
+        <FadeInView delay={300}>
+          <View style={styles.moodSection}>
+            <Text style={styles.sectionTitle}>¿Cómo te sientes?</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {moods.map((mood, index) => (
+                <EmotionChip
+                  key={index}
+                  emoji={mood.emoji}
+                  label={mood.label}
+                  selected={selectedMood === mood.label}
+                  onPress={() => setSelectedMood(selectedMood === mood.label ? null : mood.label)}
+                  color={mood.color}
+                />
+              ))}
+            </ScrollView>
           </View>
-        </View>
+        </FadeInView>
 
         {/* Progress Card */}
-        <View style={styles.progressCard}>
-          <View style={styles.progressHeader}>
-            <View>
-              <Text style={styles.progressTitle}>Tu Progreso</Text>
-              <Text style={styles.progressSubtitle}>Nivel 3 • 750/1000 XP</Text>
+        <ScaleInView delay={500}>
+          <View style={styles.progressCard}>
+            <View style={styles.progressHeader}>
+              <View>
+                <Text style={styles.progressTitle}>Tu Progreso</Text>
+                <Text style={styles.progressSubtitle}>Nivel 3 • 750/1000 XP</Text>
+              </View>
+              <View style={styles.levelBadge}>
+                <TrendingUp size={20} color="#6366F1" />
+              </View>
             </View>
-            <View style={styles.levelBadge}>
-              <TrendingUp size={20} color="#6366F1" />
+            <ProgressBar progress={0.75} delay={800} />
+            <View style={styles.statsContainer}>
+              <StaggeredList staggerDelay={100} initialDelay={1000}>
+                <View style={styles.stat}>
+                  <Text style={styles.statNumber}>3</Text>
+                  <Text style={styles.statLabel}>Tests</Text>
+                </View>
+                <View style={styles.stat}>
+                  <Text style={styles.statNumber}>12</Text>
+                  <Text style={styles.statLabel}>Sesiones</Text>
+                </View>
+                <View style={styles.stat}>
+                  <Text style={styles.statNumber}>7</Text>
+                  <Text style={styles.statLabel}>Días</Text>
+                </View>
+              </StaggeredList>
             </View>
           </View>
-          <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: '75%' }]} />
-          </View>
-          <View style={styles.statsContainer}>
-            <View style={styles.stat}>
-              <Text style={styles.statNumber}>3</Text>
-              <Text style={styles.statLabel}>Tests</Text>
-            </View>
-            <View style={styles.stat}>
-              <Text style={styles.statNumber}>12</Text>
-              <Text style={styles.statLabel}>Sesiones</Text>
-            </View>
-            <View style={styles.stat}>
-              <Text style={styles.statNumber}>7</Text>
-              <Text style={styles.statLabel}>Días</Text>
-            </View>
-          </View>
-        </View>
+        </ScaleInView>
 
         {/* Quick Actions */}
-        <View style={styles.actionsSection}>
-          <Text style={styles.sectionTitle}>Acciones Rápidas</Text>
-          {quickActions.map((action) => (
-            <TouchableOpacity
-              key={action.id}
-              style={styles.actionCard}
-              onPress={() => router.push(action.route as any)}
-            >
-              <View style={[styles.actionIcon, { backgroundColor: action.color }]}>
-                <action.icon size={24} color={action.iconColor} />
-              </View>
-              <View style={styles.actionContent}>
-                <Text style={styles.actionTitle}>{action.title}</Text>
-                <Text style={styles.actionSubtitle}>{action.subtitle}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
+        <FadeInView delay={700}>
+          <View style={styles.actionsSection}>
+            <Text style={styles.sectionTitle}>Acciones Rápidas</Text>
+            <StaggeredList staggerDelay={150} initialDelay={900}>
+              {quickActions.map((action) => (
+                <AnimatedButton
+                  key={action.id}
+                  onPress={() => router.push(action.route as any)}
+                  variant="ghost"
+                >
+                  <View style={styles.actionCard}>
+                    <View style={[styles.actionIcon, { backgroundColor: action.color }]}>
+                      <action.icon size={24} color={action.iconColor} />
+                    </View>
+                    <View style={styles.actionContent}>
+                      <Text style={styles.actionTitle}>{action.title}</Text>
+                      <Text style={styles.actionSubtitle}>{action.subtitle}</Text>
+                    </View>
+                  </View>
+                </AnimatedButton>
+              ))}
+            </StaggeredList>
+          </View>
+        </FadeInView>
 
         {/* Daily Inspiration */}
-        <View style={styles.inspirationCard}>
-          <View style={styles.inspirationHeader}>
-            <Star size={20} color="#F59E0B" />
-            <Text style={styles.inspirationTitle}>Inspiración del día</Text>
+        <ScaleInView delay={1200}>
+          <View style={styles.inspirationCard}>
+            <View style={styles.inspirationHeader}>
+              <Star size={20} color="#F59E0B" />
+              <Text style={styles.inspirationTitle}>Inspiración del día</Text>
+            </View>
+            {showTyping ? (
+              <TypingText
+                text="El futuro pertenece a quienes creen en la belleza de sus sueños."
+                speed={30}
+                style={styles.inspirationText}
+                onComplete={() => {
+                  setTimeout(() => setShowTyping(false), 2000);
+                }}
+              />
+            ) : (
+              <TouchableOpacity onPress={() => setShowTyping(true)}>
+                <Text style={styles.inspirationText}>
+                  "El futuro pertenece a quienes creen en la belleza de sus sueños."
+                </Text>
+              </TouchableOpacity>
+            )}
+            <Text style={styles.inspirationAuthor}>- Eleanor Roosevelt</Text>
           </View>
-          <Text style={styles.inspirationText}>
-            "El futuro pertenece a quienes creen en la belleza de sus sueños."
-          </Text>
-          <Text style={styles.inspirationAuthor}>- Eleanor Roosevelt</Text>
-        </View>
+        </ScaleInView>
       </ScrollView>
     </SafeAreaView>
   );
@@ -177,26 +227,6 @@ const styles = StyleSheet.create({
     color: '#1F2937',
     marginBottom: 16,
   },
-  moodContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  moodButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  moodEmoji: {
-    fontSize: 24,
-  },
   progressCard: {
     backgroundColor: '#FFFFFF',
     marginHorizontal: 20,
@@ -234,20 +264,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  progressBar: {
-    height: 8,
-    backgroundColor: '#F3F4F6',
-    borderRadius: 4,
-    marginBottom: 16,
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#6366F1',
-    borderRadius: 4,
-  },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    marginTop: 16,
   },
   stat: {
     alignItems: 'center',
