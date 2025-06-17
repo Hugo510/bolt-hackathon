@@ -1,5 +1,5 @@
 import { Tabs, Redirect } from 'expo-router';
-import { Chrome as Home, Brain, Users, MessageCircle, User } from 'lucide-react-native';
+import { Chrome as Home, Brain, Users, MessageCircle, User, TrendingUp } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
@@ -37,7 +37,7 @@ export default function TabLayout() {
         },
         tabBarLabelStyle: {
           fontSize: 12,
-          fontFamily: 'Inter-Medium',
+          fontFamily: 'Inter_500Medium',
           marginTop: 4,
         },
       }}
@@ -75,6 +75,15 @@ export default function TabLayout() {
           title: 'Apoyo',
           tabBarIcon: ({ size, color }) => (
             <MessageCircle size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="progress"
+        options={{
+          title: 'Progreso',
+          tabBarIcon: ({ size, color }) => (
+            <TrendingUp size={size} color={color} />
           ),
         }}
       />
