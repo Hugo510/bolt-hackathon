@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,19 +8,24 @@ import Animated, {
   withSpring,
   withRepeat,
   withTiming,
-  interpolate,
 } from 'react-native-reanimated';
 import { useEffect, useState } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useResponsive, useResponsiveSpacing, useResponsiveFontSize } from '@/hooks/useResponsive';
+import ResponsiveContainer from '@/components/ui/ResponsiveContainer';
+import ResponsiveGrid from '@/components/ui/ResponsiveGrid';
+import BreathingCircle from '@/components/ui/BreathingCircle';
+import EmotionChip from '@/components/ui/EmotionChip';
 import { Heart, Brain, Users, MessageCircle, ArrowRight, Moon, Sun, Sparkles } from 'lucide-react-native';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function AuthIndex() {
   const router = useRouter();
   const { theme, isDark, toggleTheme } = useTheme();
   const { isFirstLaunch } = useAuth();
+  const { isMobile, isTablet, width, height, orientation } = useResponsive();
+  const spacing = useResponsiveSpacing();
+  const fontSize = useResponsiveFontSize();
   
   // Animaciones principales
   const breathingScale = useSharedValue(1);
@@ -110,53 +115,222 @@ export default function AuthIndex() {
     transform: [{ translateY: slideUp.value }],
   }));
 
+  // Estilos responsivos dinámicos
+  const responsiveStyles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    themeButton: {
+      position: 'absolute',
+      top: isMobile ? 60 : 80,
+      right: spacing.md,
+      width: isMobile ? 44 : 52,
+      height: isMobile ? 44 : 52,
+      borderRadius: isMobile ? 22 : 26,
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 10,
+      backgroundColor: theme.colors.surface,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+      elevation: 4,
+    },
+    scrollContent: {
+      paddingBottom: spacing.xl,
+    },
+    header: {
+      alignItems: 'center',
+      paddingTop: isMobile ? spacing.xl : spacing.xxl,
+      paddingBottom: spacing.lg,
+    },
+    breathingContainer: {
+      position: 'relative',
+      marginBottom: spacing.lg,
+    },
+    welcomeText: {
+      fontSize: fontSize.lg,
+      fontFamily: 'Inter_600SemiBold',
+      marginBottom: spacing.xs,
+      color: theme.colors.textSecondary,
+    },
+    mainTitle: {
+      fontSize: isMobile ? fontSize.display : fontSize.display + 8,
+      fontFamily: 'Inter_700Bold',
+      marginBottom: spacing.md,
+      textAlign: 'center',
+      color: theme.colors.text,
+    },
+    subtitle: {
+      fontSize: fontSize.md,
+      fontFamily: 'Inter_400Regular',
+      textAlign: 'center',
+      lineHeight: fontSize.md * 1.5,
+      paddingHorizontal: spacing.md,
+      color: theme.colors.textSecondary,
+    },
+    sectionTitle: {
+      fontSize: fontSize.xl,
+      fontFamily: 'Inter_600SemiBold',
+      marginBottom: spacing.lg,
+      textAlign: 'center',
+      color: theme.colors.text,
+    },
+    moodSection: {
+      marginBottom: spacing.xl,
+    },
+    moodGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+      gap: spacing.sm,
+    },
+    featuresSection: {
+      marginBottom: spacing.xl,
+    },
+    featureCard: {
+      flexDirection: isMobile ? 'column' : 'row',
+      alignItems: isMobile ? 'center' : 'flex-start',
+      padding: spacing.lg,
+      borderRadius: 16,
+      marginBottom: spacing.md,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+      elevation: 3,
+      textAlign: isMobile ? 'center' : 'left',
+    },
+    featureIcon: {
+      width: isMobile ? 48 : 56,
+      height: isMobile ? 48 : 56,
+      borderRadius: isMobile ? 24 : 28,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: isMobile ? 0 : spacing.md,
+      marginBottom: isMobile ? spacing.sm : 0,
+    },
+    featureContent: {
+      flex: 1,
+      alignItems: isMobile ? 'center' : 'flex-start',
+    },
+    featureTitle: {
+      fontSize: fontSize.lg,
+      fontFamily: 'Inter_600SemiBold',
+      marginBottom: spacing.xs,
+      color: theme.colors.text,
+      textAlign: isMobile ? 'center' : 'left',
+    },
+    featureDescription: {
+      fontSize: fontSize.sm,
+      fontFamily: 'Inter_400Regular',
+      lineHeight: fontSize.sm * 1.4,
+      color: theme.colors.textSecondary,
+      textAlign: isMobile ? 'center' : 'left',
+    },
+    quoteCard: {
+      borderRadius: 16,
+      padding: spacing.lg,
+      marginBottom: spacing.xl,
+      borderLeftWidth: 4,
+      borderLeftColor: theme.colors.primary,
+      backgroundColor: theme.colors.primary + '10',
+    },
+    quoteText: {
+      fontSize: fontSize.md,
+      fontFamily: 'Inter_400Regular',
+      lineHeight: fontSize.md * 1.5,
+      marginBottom: spacing.sm,
+      fontStyle: 'italic',
+      color: theme.colors.primary,
+    },
+    quoteAuthor: {
+      fontSize: fontSize.sm,
+      fontFamily: 'Inter_600SemiBold',
+      textAlign: 'right',
+      color: theme.colors.primary,
+    },
+    actionButtons: {
+      gap: spacing.md,
+      flexDirection: isTablet && orientation === 'landscape' ? 'row' : 'column',
+    },
+    primaryButton: {
+      borderRadius: 16,
+      overflow: 'hidden',
+      shadowColor: '#6366F1',
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.3,
+      shadowRadius: 16,
+      elevation: 12,
+      flex: isTablet && orientation === 'landscape' ? 1 : undefined,
+    },
+    gradientButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: isMobile ? 18 : 20,
+      paddingHorizontal: spacing.lg,
+      gap: spacing.sm,
+    },
+    primaryButtonText: {
+      fontSize: fontSize.md,
+      fontFamily: 'Inter_600SemiBold',
+      color: '#FFFFFF',
+    },
+    secondaryButton: {
+      borderRadius: 16,
+      paddingVertical: isMobile ? 18 : 20,
+      paddingHorizontal: spacing.lg,
+      alignItems: 'center',
+      borderWidth: 2,
+      backgroundColor: theme.colors.surface,
+      borderColor: theme.colors.border,
+      flex: isTablet && orientation === 'landscape' ? 1 : undefined,
+    },
+    secondaryButtonText: {
+      fontSize: fontSize.md,
+      fontFamily: 'Inter_600SemiBold',
+      color: theme.colors.primary,
+    },
+  });
+
   const MoodChip = ({ mood, isSelected, onPress }: { 
     mood: typeof moods[0], 
     isSelected: boolean, 
     onPress: () => void 
   }) => (
-    <TouchableOpacity
-      style={[
-        styles.moodChip,
-        { 
-          backgroundColor: isSelected ? mood.color : theme.colors.surface,
-          borderColor: isSelected ? mood.textColor : theme.colors.border,
-        },
-        isSelected && { borderWidth: 2 }
-      ]}
+    <EmotionChip
+      emoji={mood.emoji}
+      label={mood.label}
+      selected={isSelected}
       onPress={onPress}
-      activeOpacity={0.7}
-    >
-      <Text style={styles.moodEmoji}>{mood.emoji}</Text>
-      <Text style={[
-        styles.moodLabel,
-        { color: isSelected ? mood.textColor : theme.colors.textSecondary }
-      ]}>
-        {mood.label}
-      </Text>
-    </TouchableOpacity>
+      backgroundColor={mood.color}
+      textColor={mood.textColor}
+    />
   );
 
   const FeatureCard = ({ feature, index }: { feature: typeof features[0], index: number }) => (
     <Animated.View
       style={[
-        styles.featureCard,
+        responsiveStyles.featureCard,
         fadeInStyle,
         { backgroundColor: feature.color }
       ]}
     >
-      <View style={[styles.featureIcon, { backgroundColor: feature.iconColor + '20' }]}>
-        <feature.icon size={28} color={feature.iconColor} />
+      <View style={[responsiveStyles.featureIcon, { backgroundColor: feature.iconColor + '20' }]}>
+        <feature.icon size={isMobile ? 24 : 28} color={feature.iconColor} />
       </View>
-      <View style={styles.featureContent}>
-        <Text style={[styles.featureTitle, { color: theme.colors.text }]}>{feature.title}</Text>
-        <Text style={[styles.featureDescription, { color: theme.colors.textSecondary }]}>{feature.description}</Text>
+      <View style={responsiveStyles.featureContent}>
+        <Text style={responsiveStyles.featureTitle}>{feature.title}</Text>
+        <Text style={responsiveStyles.featureDescription}>{feature.description}</Text>
       </View>
     </Animated.View>
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View style={responsiveStyles.container}>
       {/* Fondo con gradiente sutil */}
       <LinearGradient
         colors={isDark 
@@ -170,323 +344,108 @@ export default function AuthIndex() {
 
       {/* Botón de tema */}
       <TouchableOpacity
-        style={[styles.themeButton, { backgroundColor: theme.colors.surface }]}
+        style={responsiveStyles.themeButton}
         onPress={toggleTheme}
         activeOpacity={0.7}
       >
         {isDark ? (
-          <Sun size={20} color={theme.colors.accent} />
+          <Sun size={isMobile ? 20 : 24} color={theme.colors.accent} />
         ) : (
-          <Moon size={20} color={theme.colors.primary} />
+          <Moon size={isMobile ? 20 : 24} color={theme.colors.primary} />
         )}
       </TouchableOpacity>
 
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={{ flex: 1 }}>
         <ScrollView 
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={responsiveStyles.scrollContent}
         >
-          {/* Header con elemento de respiración */}
-          <Animated.View style={[styles.header, fadeInStyle]}>
-            <Animated.View style={[styles.breathingContainer, breathingStyle, floatingStyle]}>
-              <View style={[styles.breathingCircle, { backgroundColor: theme.colors.primary + '20' }]}>
-                <Heart size={32} color={theme.colors.primary} />
-              </View>
-              <View style={styles.sparkleContainer}>
-                <Sparkles size={16} color={theme.colors.accent} style={styles.sparkle1} />
-                <Sparkles size={12} color={theme.colors.secondary} style={styles.sparkle2} />
-                <Sparkles size={14} color={theme.colors.success} style={styles.sparkle3} />
+          <ResponsiveContainer maxWidth={{ mobile: '100%', tablet: 600, desktop: 800 }}>
+            {/* Header con elemento de respiración */}
+            <Animated.View style={[responsiveStyles.header, fadeInStyle]}>
+              <Animated.View style={[responsiveStyles.breathingContainer, breathingStyle, floatingStyle]}>
+                <BreathingCircle 
+                  size={isMobile ? 100 : isTablet ? 120 : 140} 
+                  color={theme.colors.primary}
+                >
+                  <Heart size={isMobile ? 28 : 32} color={theme.colors.primary} />
+                </BreathingCircle>
+                <View style={StyleSheet.absoluteFill}>
+                  <Sparkles size={16} color={theme.colors.accent} style={{ position: 'absolute', top: 10, right: 15 }} />
+                  <Sparkles size={12} color={theme.colors.secondary} style={{ position: 'absolute', bottom: 20, left: 10 }} />
+                  <Sparkles size={14} color={theme.colors.success} style={{ position: 'absolute', top: 30, left: -5 }} />
+                </View>
+              </Animated.View>
+
+              <Text style={responsiveStyles.welcomeText}>¡Bienvenido!</Text>
+              <Text style={responsiveStyles.mainTitle}>CarreraGuía</Text>
+              <Text style={responsiveStyles.subtitle}>
+                Tu compañero inteligente para descubrir tu vocación y cuidar tu bienestar emocional
+              </Text>
+            </Animated.View>
+
+            {/* Selector de estado emocional */}
+            <Animated.View style={[responsiveStyles.moodSection, fadeInStyle]}>
+              <Text style={responsiveStyles.sectionTitle}>¿Cómo te sientes hoy?</Text>
+              <View style={responsiveStyles.moodGrid}>
+                {moods.map((mood, index) => (
+                  <MoodChip
+                    key={index}
+                    mood={mood}
+                    isSelected={selectedMood === mood.label}
+                    onPress={() => setSelectedMood(selectedMood === mood.label ? null : mood.label)}
+                  />
+                ))}
               </View>
             </Animated.View>
 
-            <Text style={[styles.welcomeText, { color: theme.colors.textSecondary }]}>
-              ¡Bienvenido!
-            </Text>
-            <Text style={[styles.mainTitle, { color: theme.colors.text }]}>CarreraGuía</Text>
-            <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-              Tu compañero inteligente para descubrir tu vocación y cuidar tu bienestar emocional
-            </Text>
-          </Animated.View>
-
-          {/* Selector de estado emocional */}
-          <Animated.View style={[styles.moodSection, fadeInStyle]}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>¿Cómo te sientes hoy?</Text>
-            <View style={styles.moodGrid}>
-              {moods.map((mood, index) => (
-                <MoodChip
-                  key={index}
-                  mood={mood}
-                  isSelected={selectedMood === mood.label}
-                  onPress={() => setSelectedMood(selectedMood === mood.label ? null : mood.label)}
-                />
+            {/* Características principales */}
+            <Animated.View style={[responsiveStyles.featuresSection, fadeInStyle]}>
+              <Text style={responsiveStyles.sectionTitle}>¿Qué puedes hacer?</Text>
+              {features.map((feature, index) => (
+                <FeatureCard key={index} feature={feature} index={index} />
               ))}
-            </View>
-          </Animated.View>
+            </Animated.View>
 
-          {/* Características principales */}
-          <Animated.View style={[styles.featuresSection, fadeInStyle]}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>¿Qué puedes hacer?</Text>
-            {features.map((feature, index) => (
-              <FeatureCard key={index} feature={feature} index={index} />
-            ))}
-          </Animated.View>
+            {/* Frase inspiracional */}
+            <Animated.View style={[responsiveStyles.quoteCard, fadeInStyle]}>
+              <Text style={responsiveStyles.quoteText}>
+                "{inspirationalQuotes[currentQuote].text}"
+              </Text>
+              <Text style={responsiveStyles.quoteAuthor}>
+                - {inspirationalQuotes[currentQuote].author}
+              </Text>
+            </Animated.View>
 
-          {/* Frase inspiracional */}
-          <Animated.View style={[styles.quoteCard, { backgroundColor: theme.colors.primary + '10' }, fadeInStyle]}>
-            <Text style={[styles.quoteText, { color: theme.colors.primary }]}>
-              "{inspirationalQuotes[currentQuote].text}"
-            </Text>
-            <Text style={[styles.quoteAuthor, { color: theme.colors.primary }]}>
-              - {inspirationalQuotes[currentQuote].author}
-            </Text>
-          </Animated.View>
-
-          {/* Botones de acción */}
-          <Animated.View style={[styles.actionButtons, fadeInStyle]}>
-            <TouchableOpacity
-              style={styles.primaryButton}
-              onPress={() => router.push('/(auth)/register')}
-              activeOpacity={0.8}
-            >
-              <LinearGradient
-                colors={theme.colors.gradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.gradientButton}
+            {/* Botones de acción */}
+            <Animated.View style={[responsiveStyles.actionButtons, fadeInStyle]}>
+              <TouchableOpacity
+                style={responsiveStyles.primaryButton}
+                onPress={() => router.push('/(auth)/register')}
+                activeOpacity={0.8}
               >
-                <Text style={styles.primaryButtonText}>Comenzar mi viaje</Text>
-                <ArrowRight size={20} color="#FFFFFF" />
-              </LinearGradient>
-            </TouchableOpacity>
+                <LinearGradient
+                  colors={theme.colors.gradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={responsiveStyles.gradientButton}
+                >
+                  <Text style={responsiveStyles.primaryButtonText}>Comenzar mi viaje</Text>
+                  <ArrowRight size={20} color="#FFFFFF" />
+                </LinearGradient>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.secondaryButton, { 
-                backgroundColor: theme.colors.surface,
-                borderColor: theme.colors.border 
-              }]}
-              onPress={() => router.push('/(auth)/login')}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.secondaryButtonText, { color: theme.colors.primary }]}>Ya tengo cuenta</Text>
-            </TouchableOpacity>
-          </Animated.View>
+              <TouchableOpacity
+                style={responsiveStyles.secondaryButton}
+                onPress={() => router.push('/(auth)/login')}
+                activeOpacity={0.7}
+              >
+                <Text style={responsiveStyles.secondaryButtonText}>Ya tengo cuenta</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          </ResponsiveContainer>
         </ScrollView>
       </SafeAreaView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  themeButton: {
-    position: 'absolute',
-    top: 60,
-    right: 24,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  safeArea: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-  },
-  header: {
-    alignItems: 'center',
-    paddingTop: 40,
-    paddingBottom: 32,
-  },
-  breathingContainer: {
-    position: 'relative',
-    marginBottom: 32,
-  },
-  breathingCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  sparkleContainer: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-  },
-  sparkle1: {
-    position: 'absolute',
-    top: 10,
-    right: 15,
-  },
-  sparkle2: {
-    position: 'absolute',
-    bottom: 20,
-    left: 10,
-  },
-  sparkle3: {
-    position: 'absolute',
-    top: 30,
-    left: -5,
-  },
-  welcomeText: {
-    fontSize: 20,
-    fontFamily: 'Inter_600SemiBold',
-    marginBottom: 8,
-  },
-  mainTitle: {
-    fontSize: 36,
-    fontFamily: 'Inter_700Bold',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-    textAlign: 'center',
-    lineHeight: 24,
-    paddingHorizontal: 20,
-  },
-  moodSection: {
-    marginBottom: 32,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontFamily: 'Inter_600SemiBold',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  moodGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 12,
-  },
-  moodChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-    minWidth: 100,
-    borderWidth: 1,
-  },
-  moodEmoji: {
-    fontSize: 18,
-    marginRight: 8,
-  },
-  moodLabel: {
-    fontSize: 14,
-    fontFamily: 'Inter_500Medium',
-  },
-  featuresSection: {
-    marginBottom: 32,
-  },
-  featureCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 20,
-    borderRadius: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  featureIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  featureContent: {
-    flex: 1,
-  },
-  featureTitle: {
-    fontSize: 16,
-    fontFamily: 'Inter_600SemiBold',
-    marginBottom: 4,
-  },
-  featureDescription: {
-    fontSize: 14,
-    fontFamily: 'Inter_400Regular',
-    lineHeight: 20,
-  },
-  quoteCard: {
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 32,
-    borderLeftWidth: 4,
-  },
-  quoteText: {
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-    lineHeight: 24,
-    marginBottom: 12,
-    fontStyle: 'italic',
-  },
-  quoteAuthor: {
-    fontSize: 14,
-    fontFamily: 'Inter_600SemiBold',
-    textAlign: 'right',
-  },
-  actionButtons: {
-    gap: 16,
-  },
-  primaryButton: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    shadowColor: '#6366F1',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 12,
-  },
-  gradientButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 18,
-    paddingHorizontal: 32,
-    gap: 8,
-  },
-  primaryButtonText: {
-    fontSize: 16,
-    fontFamily: 'Inter_600SemiBold',
-    color: '#FFFFFF',
-  },
-  secondaryButton: {
-    borderRadius: 16,
-    paddingVertical: 18,
-    paddingHorizontal: 32,
-    alignItems: 'center',
-    borderWidth: 2,
-  },
-  secondaryButtonText: {
-    fontSize: 16,
-    fontFamily: 'Inter_600SemiBold',
-  },
-});

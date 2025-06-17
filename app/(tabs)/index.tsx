@@ -1,7 +1,12 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Brain, Users, MessageCircle, BookOpen, Star, TrendingUp } from 'lucide-react-native';
+import { Brain, Users, MessageCircle, BookOpen, Star, TrendingUp, Calendar, Award } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useResponsive, useResponsiveSpacing, useResponsiveFontSize } from '@/hooks/useResponsive';
+import ResponsiveContainer from '@/components/ui/ResponsiveContainer';
+import ResponsiveGrid from '@/components/ui/ResponsiveGrid';
+import ResponsiveImage from '@/components/ui/ResponsiveImage';
 import FadeInView from '@/components/animations/FadeInView';
 import ScaleInView from '@/components/animations/ScaleInView';
 import StaggeredList from '@/components/animations/StaggeredList';
@@ -13,6 +18,11 @@ import { useState } from 'react';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
+  const { isMobile, isTablet, width } = useResponsive();
+  const spacing = useResponsiveSpacing();
+  const fontSize = useResponsiveFontSize();
+  
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [showTyping, setShowTyping] = useState(false);
 
@@ -54,303 +64,316 @@ export default function HomeScreen() {
     { emoji: '😴', label: 'Cansado', color: '#6B7280' },
   ];
 
+  // Estilos responsivos dinámicos
+  const responsiveStyles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    header: {
+      flexDirection: isMobile ? 'column' : 'row',
+      justifyContent: 'space-between',
+      alignItems: isMobile ? 'flex-start' : 'center',
+      paddingVertical: spacing.lg,
+      gap: isMobile ? spacing.sm : 0,
+    },
+    headerText: {
+      flex: 1,
+    },
+    greeting: {
+      fontSize: isMobile ? fontSize.xl : fontSize.xxl,
+      fontFamily: 'Inter-Bold',
+      color: theme.colors.text,
+      marginBottom: spacing.xs,
+    },
+    subtitle: {
+      fontSize: fontSize.md,
+      fontFamily: 'Inter-Regular',
+      color: theme.colors.textSecondary,
+    },
+    profileContainer: {
+      width: isMobile ? 48 : 56,
+      height: isMobile ? 48 : 56,
+      borderRadius: isMobile ? 24 : 28,
+      overflow: 'hidden',
+      marginTop: isMobile ? spacing.sm : 0,
+    },
+    moodSection: {
+      marginBottom: spacing.xl,
+    },
+    sectionTitle: {
+      fontSize: fontSize.lg,
+      fontFamily: 'Inter-SemiBold',
+      color: theme.colors.text,
+      marginBottom: spacing.md,
+    },
+    moodContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+      justifyContent: isMobile ? 'flex-start' : 'center',
+    },
+    progressCard: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: 16,
+      padding: spacing.lg,
+      marginBottom: spacing.xl,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+      elevation: 3,
+    },
+    progressHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: spacing.md,
+    },
+    progressTitle: {
+      fontSize: fontSize.lg,
+      fontFamily: 'Inter-SemiBold',
+      color: theme.colors.text,
+    },
+    progressSubtitle: {
+      fontSize: fontSize.sm,
+      fontFamily: 'Inter-Regular',
+      color: theme.colors.textSecondary,
+      marginTop: spacing.xs,
+    },
+    levelBadge: {
+      width: isMobile ? 40 : 48,
+      height: isMobile ? 40 : 48,
+      borderRadius: isMobile ? 20 : 24,
+      backgroundColor: '#E0E7FF',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    statsContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      marginTop: spacing.md,
+    },
+    stat: {
+      alignItems: 'center',
+    },
+    statNumber: {
+      fontSize: fontSize.xl,
+      fontFamily: 'Inter-Bold',
+      color: theme.colors.text,
+    },
+    statLabel: {
+      fontSize: fontSize.xs,
+      fontFamily: 'Inter-Regular',
+      color: theme.colors.textSecondary,
+      marginTop: spacing.xs,
+    },
+    actionsSection: {
+      marginBottom: spacing.xl,
+    },
+    actionCard: {
+      flexDirection: isMobile ? 'column' : 'row',
+      alignItems: isMobile ? 'center' : 'flex-start',
+      backgroundColor: theme.colors.surface,
+      borderRadius: 16,
+      padding: spacing.lg,
+      marginBottom: spacing.md,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 2,
+      textAlign: isMobile ? 'center' : 'left',
+    },
+    actionIcon: {
+      width: isMobile ? 48 : 56,
+      height: isMobile ? 48 : 56,
+      borderRadius: isMobile ? 24 : 28,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: isMobile ? 0 : spacing.md,
+      marginBottom: isMobile ? spacing.sm : 0,
+    },
+    actionContent: {
+      flex: 1,
+      alignItems: isMobile ? 'center' : 'flex-start',
+    },
+    actionTitle: {
+      fontSize: fontSize.md,
+      fontFamily: 'Inter-SemiBold',
+      color: theme.colors.text,
+      marginBottom: spacing.xs,
+      textAlign: isMobile ? 'center' : 'left',
+    },
+    actionSubtitle: {
+      fontSize: fontSize.sm,
+      fontFamily: 'Inter-Regular',
+      color: theme.colors.textSecondary,
+      textAlign: isMobile ? 'center' : 'left',
+    },
+    inspirationCard: {
+      backgroundColor: '#FEF3C7',
+      borderRadius: 16,
+      padding: spacing.lg,
+      marginBottom: spacing.xl,
+    },
+    inspirationHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: spacing.sm,
+    },
+    inspirationTitle: {
+      fontSize: fontSize.md,
+      fontFamily: 'Inter-SemiBold',
+      color: '#92400E',
+      marginLeft: spacing.sm,
+    },
+    inspirationText: {
+      fontSize: fontSize.md,
+      fontFamily: 'Inter-Regular',
+      color: '#92400E',
+      lineHeight: fontSize.md * 1.5,
+      marginBottom: spacing.sm,
+    },
+    inspirationAuthor: {
+      fontSize: fontSize.sm,
+      fontFamily: 'Inter-Medium',
+      color: '#92400E',
+      textAlign: 'right',
+    },
+  });
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={responsiveStyles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <FadeInView delay={0}>
-          <View style={styles.header}>
-            <View>
-              <Text style={styles.greeting}>¡Hola, María! 👋</Text>
-              <Text style={styles.subtitle}>¿Cómo te sientes hoy?</Text>
+        <ResponsiveContainer>
+          {/* Header */}
+          <FadeInView delay={0}>
+            <View style={responsiveStyles.header}>
+              <View style={responsiveStyles.headerText}>
+                <Text style={responsiveStyles.greeting}>¡Hola, María! 👋</Text>
+                <Text style={responsiveStyles.subtitle}>¿Cómo te sientes hoy?</Text>
+              </View>
+              <ScaleInView delay={200}>
+                <View style={responsiveStyles.profileContainer}>
+                  <ResponsiveImage
+                    source={{ uri: 'https://images.pexels.com/photos/3769021/pexels-photo-3769021.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2' }}
+                    aspectRatio={1}
+                    borderRadius={isMobile ? 24 : 28}
+                  />
+                </View>
+              </ScaleInView>
             </View>
-            <ScaleInView delay={200}>
-              <View style={styles.profileContainer}>
-                <Image
-                  source={{ uri: 'https://images.pexels.com/photos/3769021/pexels-photo-3769021.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2' }}
-                  style={styles.profileImage}
-                />
-              </View>
-            </ScaleInView>
-          </View>
-        </FadeInView>
+          </FadeInView>
 
-        {/* Mood Tracker */}
-        <FadeInView delay={300}>
-          <View style={styles.moodSection}>
-            <Text style={styles.sectionTitle}>¿Cómo te sientes?</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {moods.map((mood, index) => (
-                <EmotionChip
-                  key={index}
-                  emoji={mood.emoji}
-                  label={mood.label}
-                  selected={selectedMood === mood.label}
-                  onPress={() => setSelectedMood(selectedMood === mood.label ? null : mood.label)}
-                  color={mood.color}
-                />
-              ))}
-            </ScrollView>
-          </View>
-        </FadeInView>
-
-        {/* Progress Card */}
-        <ScaleInView delay={500}>
-          <View style={styles.progressCard}>
-            <View style={styles.progressHeader}>
-              <View>
-                <Text style={styles.progressTitle}>Tu Progreso</Text>
-                <Text style={styles.progressSubtitle}>Nivel 3 • 750/1000 XP</Text>
-              </View>
-              <View style={styles.levelBadge}>
-                <TrendingUp size={20} color="#6366F1" />
+          {/* Mood Tracker */}
+          <FadeInView delay={300}>
+            <View style={responsiveStyles.moodSection}>
+              <Text style={responsiveStyles.sectionTitle}>¿Cómo te sientes?</Text>
+              <View style={responsiveStyles.moodContainer}>
+                {moods.map((mood, index) => (
+                  <EmotionChip
+                    key={index}
+                    emoji={mood.emoji}
+                    label={mood.label}
+                    selected={selectedMood === mood.label}
+                    onPress={() => setSelectedMood(selectedMood === mood.label ? null : mood.label)}
+                    color={mood.color}
+                  />
+                ))}
               </View>
             </View>
-            <ProgressBar progress={0.75} delay={800} />
-            <View style={styles.statsContainer}>
-              <StaggeredList staggerDelay={100} initialDelay={1000}>
-                <View style={styles.stat}>
-                  <Text style={styles.statNumber}>3</Text>
-                  <Text style={styles.statLabel}>Tests</Text>
-                </View>
-                <View style={styles.stat}>
-                  <Text style={styles.statNumber}>12</Text>
-                  <Text style={styles.statLabel}>Sesiones</Text>
-                </View>
-                <View style={styles.stat}>
-                  <Text style={styles.statNumber}>7</Text>
-                  <Text style={styles.statLabel}>Días</Text>
-                </View>
-              </StaggeredList>
-            </View>
-          </View>
-        </ScaleInView>
+          </FadeInView>
 
-        {/* Quick Actions */}
-        <FadeInView delay={700}>
-          <View style={styles.actionsSection}>
-            <Text style={styles.sectionTitle}>Acciones Rápidas</Text>
-            <StaggeredList staggerDelay={150} initialDelay={900}>
-              {quickActions.map((action) => (
-                <AnimatedButton
-                  key={action.id}
-                  onPress={() => router.push(action.route as any)}
-                  variant="ghost"
-                >
-                  <View style={styles.actionCard}>
-                    <View style={[styles.actionIcon, { backgroundColor: action.color }]}>
-                      <action.icon size={24} color={action.iconColor} />
-                    </View>
-                    <View style={styles.actionContent}>
-                      <Text style={styles.actionTitle}>{action.title}</Text>
-                      <Text style={styles.actionSubtitle}>{action.subtitle}</Text>
-                    </View>
+          {/* Progress Card */}
+          <ScaleInView delay={500}>
+            <View style={responsiveStyles.progressCard}>
+              <View style={responsiveStyles.progressHeader}>
+                <View>
+                  <Text style={responsiveStyles.progressTitle}>Tu Progreso</Text>
+                  <Text style={responsiveStyles.progressSubtitle}>Nivel 3 • 750/1000 XP</Text>
+                </View>
+                <View style={responsiveStyles.levelBadge}>
+                  <TrendingUp size={isMobile ? 20 : 24} color="#6366F1" />
+                </View>
+              </View>
+              <ProgressBar progress={0.75} delay={800} />
+              <View style={responsiveStyles.statsContainer}>
+                <StaggeredList staggerDelay={100} initialDelay={1000}>
+                  <View style={responsiveStyles.stat}>
+                    <Text style={responsiveStyles.statNumber}>3</Text>
+                    <Text style={responsiveStyles.statLabel}>Tests</Text>
                   </View>
-                </AnimatedButton>
-              ))}
-            </StaggeredList>
-          </View>
-        </FadeInView>
-
-        {/* Daily Inspiration */}
-        <ScaleInView delay={1200}>
-          <View style={styles.inspirationCard}>
-            <View style={styles.inspirationHeader}>
-              <Star size={20} color="#F59E0B" />
-              <Text style={styles.inspirationTitle}>Inspiración del día</Text>
+                  <View style={responsiveStyles.stat}>
+                    <Text style={responsiveStyles.statNumber}>12</Text>
+                    <Text style={responsiveStyles.statLabel}>Sesiones</Text>
+                  </View>
+                  <View style={responsiveStyles.stat}>
+                    <Text style={responsiveStyles.statNumber}>7</Text>
+                    <Text style={responsiveStyles.statLabel}>Días</Text>
+                  </View>
+                </StaggeredList>
+              </View>
             </View>
-            {showTyping ? (
-              <TypingText
-                text="El futuro pertenece a quienes creen en la belleza de sus sueños."
-                speed={30}
-                style={styles.inspirationText}
-                onComplete={() => {
-                  setTimeout(() => setShowTyping(false), 2000);
-                }}
-              />
-            ) : (
-              <TouchableOpacity onPress={() => setShowTyping(true)}>
-                <Text style={styles.inspirationText}>
-                  "El futuro pertenece a quienes creen en la belleza de sus sueños."
-                </Text>
-              </TouchableOpacity>
-            )}
-            <Text style={styles.inspirationAuthor}>- Eleanor Roosevelt</Text>
-          </View>
-        </ScaleInView>
+          </ScaleInView>
+
+          {/* Quick Actions */}
+          <FadeInView delay={700}>
+            <View style={responsiveStyles.actionsSection}>
+              <Text style={responsiveStyles.sectionTitle}>Acciones Rápidas</Text>
+              <ResponsiveGrid 
+                columns={{ mobile: 1, tablet: 2, desktop: 3 }}
+                gap={spacing.md}
+              >
+                {quickActions.map((action) => (
+                  <AnimatedButton
+                    key={action.id}
+                    onPress={() => router.push(action.route as any)}
+                    variant="ghost"
+                  >
+                    <View style={responsiveStyles.actionCard}>
+                      <View style={[responsiveStyles.actionIcon, { backgroundColor: action.color }]}>
+                        <action.icon size={isMobile ? 24 : 28} color={action.iconColor} />
+                      </View>
+                      <View style={responsiveStyles.actionContent}>
+                        <Text style={responsiveStyles.actionTitle}>{action.title}</Text>
+                        <Text style={responsiveStyles.actionSubtitle}>{action.subtitle}</Text>
+                      </View>
+                    </View>
+                  </AnimatedButton>
+                ))}
+              </ResponsiveGrid>
+            </View>
+          </FadeInView>
+
+          {/* Daily Inspiration */}
+          <ScaleInView delay={1200}>
+            <View style={responsiveStyles.inspirationCard}>
+              <View style={responsiveStyles.inspirationHeader}>
+                <Star size={20} color="#F59E0B" />
+                <Text style={responsiveStyles.inspirationTitle}>Inspiración del día</Text>
+              </View>
+              {showTyping ? (
+                <TypingText
+                  text="El futuro pertenece a quienes creen en la belleza de sus sueños."
+                  speed={30}
+                  style={responsiveStyles.inspirationText}
+                  onComplete={() => {
+                    setTimeout(() => setShowTyping(false), 2000);
+                  }}
+                />
+              ) : (
+                <TouchableOpacity onPress={() => setShowTyping(true)}>
+                  <Text style={responsiveStyles.inspirationText}>
+                    "El futuro pertenece a quienes creen en la belleza de sus sueños."
+                  </Text>
+                </TouchableOpacity>
+              )}
+              <Text style={responsiveStyles.inspirationAuthor}>- Eleanor Roosevelt</Text>
+            </View>
+          </ScaleInView>
+        </ResponsiveContainer>
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 24,
-  },
-  greeting: {
-    fontSize: 24,
-    fontFamily: 'Inter-Bold',
-    color: '#1F2937',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 16,
-    fontFamily: 'Inter-Regular',
-    color: '#6B7280',
-  },
-  profileContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    overflow: 'hidden',
-  },
-  profileImage: {
-    width: '100%',
-    height: '100%',
-  },
-  moodSection: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontFamily: 'Inter-SemiBold',
-    color: '#1F2937',
-    marginBottom: 16,
-  },
-  progressCard: {
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 20,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  progressHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  progressTitle: {
-    fontSize: 18,
-    fontFamily: 'Inter-SemiBold',
-    color: '#1F2937',
-  },
-  progressSubtitle: {
-    fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  levelBadge: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#E0E7FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 16,
-  },
-  stat: {
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 20,
-    fontFamily: 'Inter-Bold',
-    color: '#1F2937',
-  },
-  statLabel: {
-    fontSize: 12,
-    fontFamily: 'Inter-Regular',
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  actionsSection: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
-  },
-  actionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  actionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  actionContent: {
-    flex: 1,
-  },
-  actionTitle: {
-    fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: '#1F2937',
-    marginBottom: 2,
-  },
-  actionSubtitle: {
-    fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#6B7280',
-  },
-  inspirationCard: {
-    backgroundColor: '#FEF3C7',
-    marginHorizontal: 20,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 24,
-  },
-  inspirationHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  inspirationTitle: {
-    fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: '#92400E',
-    marginLeft: 8,
-  },
-  inspirationText: {
-    fontSize: 16,
-    fontFamily: 'Inter-Regular',
-    color: '#92400E',
-    lineHeight: 24,
-    marginBottom: 8,
-  },
-  inspirationAuthor: {
-    fontSize: 14,
-    fontFamily: 'Inter-Medium',
-    color: '#92400E',
-    textAlign: 'right',
-  },
-});

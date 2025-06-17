@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Alert, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Eye, EyeOff, Mail, Lock, User } from 'lucide-react-native';
@@ -11,6 +11,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useResponsive, useResponsiveSpacing, useResponsiveFontSize } from '@/hooks/useResponsive';
+import ResponsiveContainer from '@/components/ui/ResponsiveContainer';
 import AnimatedButton from '@/components/ui/AnimatedButton';
 import NeumorphicCard from '@/components/ui/NeumorphicCard';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,6 +21,10 @@ export default function RegisterScreen() {
   const router = useRouter();
   const { signUp } = useAuth();
   const { theme, isDark } = useTheme();
+  const { isMobile, isTablet } = useResponsive();
+  const spacing = useResponsiveSpacing();
+  const fontSize = useResponsiveFontSize();
+  
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -96,8 +102,102 @@ export default function RegisterScreen() {
     setLoading(false);
   };
 
+  // Estilos responsivos dinámicos
+  const responsiveStyles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    safeArea: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      paddingBottom: spacing.xl,
+    },
+    header: {
+      padding: spacing.md,
+      paddingTop: spacing.sm,
+    },
+    backButton: {
+      alignSelf: 'flex-start',
+      marginBottom: spacing.lg,
+    },
+    title: {
+      fontSize: isMobile ? fontSize.xxxl : fontSize.display,
+      fontFamily: 'Inter_700Bold',
+      marginBottom: spacing.xs,
+      color: theme.colors.text,
+    },
+    subtitle: {
+      fontSize: fontSize.md,
+      fontFamily: 'Inter_400Regular',
+      color: theme.colors.textSecondary,
+    },
+    formContainer: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+    formCard: {
+      padding: isMobile ? spacing.lg : spacing.xl,
+      margin: spacing.md,
+    },
+    inputContainer: {
+      marginBottom: spacing.md,
+    },
+    label: {
+      fontSize: fontSize.md,
+      fontFamily: 'Inter_600SemiBold',
+      marginBottom: spacing.sm,
+      color: theme.colors.text,
+    },
+    inputWrapper: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 2,
+      borderRadius: 16,
+      paddingHorizontal: spacing.md,
+      height: isMobile ? 56 : 64,
+      backgroundColor: theme.colors.surface,
+    },
+    inputIcon: {
+      marginRight: spacing.sm,
+    },
+    input: {
+      flex: 1,
+      fontSize: fontSize.md,
+      fontFamily: 'Inter_400Regular',
+      color: theme.colors.text,
+    },
+    eyeButton: {
+      padding: spacing.xs,
+      marginLeft: spacing.sm,
+    },
+    errorText: {
+      fontSize: fontSize.sm,
+      fontFamily: 'Inter_400Regular',
+      marginTop: spacing.xs,
+      color: theme.colors.error,
+    },
+    registerButton: {
+      marginTop: spacing.sm,
+      marginBottom: spacing.lg,
+    },
+    footer: {
+      flexDirection: isMobile ? 'column' : 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: spacing.xs,
+    },
+    footerText: {
+      fontSize: fontSize.md,
+      fontFamily: 'Inter_400Regular',
+      color: theme.colors.textSecondary,
+    },
+  });
+
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View style={responsiveStyles.container}>
       {/* Fondo con gradiente */}
       <LinearGradient
         colors={isDark 
@@ -107,236 +207,152 @@ export default function RegisterScreen() {
         style={StyleSheet.absoluteFill}
       />
 
-      <SafeAreaView style={styles.safeArea}>
-        {/* Header */}
-        <View style={styles.header}>
-          <AnimatedButton
-            title=""
-            onPress={() => router.back()}
-            variant="ghost"
-            size="sm"
-            icon={<ArrowLeft size={24} color={theme.colors.text} />}
-            style={styles.backButton}
-          />
-          <Text style={[styles.title, { color: theme.colors.text }]}>
-            Crear Cuenta
-          </Text>
-          <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-            Únete a nuestra comunidad
-          </Text>
-        </View>
-
-        <Animated.View style={[styles.formContainer, animatedStyle]}>
-          <NeumorphicCard style={styles.formCard}>
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: theme.colors.text }]}>Nombre Completo</Text>
-              <View style={[
-                styles.inputWrapper, 
-                { 
-                  borderColor: errors.fullName ? theme.colors.error : theme.colors.border,
-                  backgroundColor: theme.colors.surface 
-                }
-              ]}>
-                <User size={20} color={theme.colors.textMuted} style={styles.inputIcon} />
-                <TextInput
-                  style={[styles.input, { color: theme.colors.text }]}
-                  value={fullName}
-                  onChangeText={setFullName}
-                  placeholder="Tu nombre completo"
-                  placeholderTextColor={theme.colors.textMuted}
-                />
-              </View>
-              {errors.fullName && <Text style={[styles.errorText, { color: theme.colors.error }]}>{errors.fullName}</Text>}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: theme.colors.text }]}>Email</Text>
-              <View style={[
-                styles.inputWrapper, 
-                { 
-                  borderColor: errors.email ? theme.colors.error : theme.colors.border,
-                  backgroundColor: theme.colors.surface 
-                }
-              ]}>
-                <Mail size={20} color={theme.colors.textMuted} style={styles.inputIcon} />
-                <TextInput
-                  style={[styles.input, { color: theme.colors.text }]}
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholder="tu@email.com"
-                  placeholderTextColor={theme.colors.textMuted}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                />
-              </View>
-              {errors.email && <Text style={[styles.errorText, { color: theme.colors.error }]}>{errors.email}</Text>}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: theme.colors.text }]}>Contraseña</Text>
-              <View style={[
-                styles.inputWrapper, 
-                { 
-                  borderColor: errors.password ? theme.colors.error : theme.colors.border,
-                  backgroundColor: theme.colors.surface 
-                }
-              ]}>
-                <Lock size={20} color={theme.colors.textMuted} style={styles.inputIcon} />
-                <TextInput
-                  style={[styles.input, { color: theme.colors.text }]}
-                  value={password}
-                  onChangeText={setPassword}
-                  placeholder="••••••••"
-                  placeholderTextColor={theme.colors.textMuted}
-                  secureTextEntry={!showPassword}
-                />
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff size={20} color={theme.colors.textMuted} />
-                  ) : (
-                    <Eye size={20} color={theme.colors.textMuted} />
-                  )}
-                </TouchableOpacity>
-              </View>
-              {errors.password && <Text style={[styles.errorText, { color: theme.colors.error }]}>{errors.password}</Text>}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: theme.colors.text }]}>Confirmar Contraseña</Text>
-              <View style={[
-                styles.inputWrapper, 
-                { 
-                  borderColor: errors.confirmPassword ? theme.colors.error : theme.colors.border,
-                  backgroundColor: theme.colors.surface 
-                }
-              ]}>
-                <Lock size={20} color={theme.colors.textMuted} style={styles.inputIcon} />
-                <TextInput
-                  style={[styles.input, { color: theme.colors.text }]}
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  placeholder="••••••••"
-                  placeholderTextColor={theme.colors.textMuted}
-                  secureTextEntry={!showConfirmPassword}
-                />
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff size={20} color={theme.colors.textMuted} />
-                  ) : (
-                    <Eye size={20} color={theme.colors.textMuted} />
-                  )}
-                </TouchableOpacity>
-              </View>
-              {errors.confirmPassword && <Text style={[styles.errorText, { color: theme.colors.error }]}>{errors.confirmPassword}</Text>}
-            </View>
-
-            <AnimatedButton
-              title={loading ? 'Creando cuenta...' : 'Crear Cuenta'}
-              onPress={handleRegister}
-              variant="gradient"
-              size="lg"
-              disabled={loading}
-              style={styles.registerButton}
-            />
-
-            <View style={styles.footer}>
-              <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>¿Ya tienes cuenta? </Text>
+      <SafeAreaView style={responsiveStyles.safeArea}>
+        <ScrollView 
+          contentContainerStyle={responsiveStyles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <ResponsiveContainer maxWidth={{ mobile: '100%', tablet: 500, desktop: 600 }}>
+            {/* Header */}
+            <View style={responsiveStyles.header}>
               <AnimatedButton
-                title="Inicia sesión"
-                onPress={() => router.push('/(auth)/login')}
+                title=""
+                onPress={() => router.back()}
                 variant="ghost"
                 size="sm"
-                textStyle={{ color: theme.colors.primary, fontSize: 16 }}
+                icon={<ArrowLeft size={24} color={theme.colors.text} />}
+                style={responsiveStyles.backButton}
               />
+              <Text style={responsiveStyles.title}>Crear Cuenta</Text>
+              <Text style={responsiveStyles.subtitle}>
+                Únete a nuestra comunidad
+              </Text>
             </View>
-          </NeumorphicCard>
-        </Animated.View>
+
+            {/* Formulario */}
+            <Animated.View style={[responsiveStyles.formContainer, animatedStyle]}>
+              <NeumorphicCard style={responsiveStyles.formCard}>
+                <View style={responsiveStyles.inputContainer}>
+                  <Text style={responsiveStyles.label}>Nombre Completo</Text>
+                  <View style={[
+                    responsiveStyles.inputWrapper, 
+                    { borderColor: errors.fullName ? theme.colors.error : theme.colors.border }
+                  ]}>
+                    <User size={20} color={theme.colors.textMuted} style={responsiveStyles.inputIcon} />
+                    <TextInput
+                      style={responsiveStyles.input}
+                      value={fullName}
+                      onChangeText={setFullName}
+                      placeholder="Tu nombre completo"
+                      placeholderTextColor={theme.colors.textMuted}
+                      autoComplete="name"
+                    />
+                  </View>
+                  {errors.fullName && <Text style={responsiveStyles.errorText}>{errors.fullName}</Text>}
+                </View>
+
+                <View style={responsiveStyles.inputContainer}>
+                  <Text style={responsiveStyles.label}>Email</Text>
+                  <View style={[
+                    responsiveStyles.inputWrapper, 
+                    { borderColor: errors.email ? theme.colors.error : theme.colors.border }
+                  ]}>
+                    <Mail size={20} color={theme.colors.textMuted} style={responsiveStyles.inputIcon} />
+                    <TextInput
+                      style={responsiveStyles.input}
+                      value={email}
+                      onChangeText={setEmail}
+                      placeholder="tu@email.com"
+                      placeholderTextColor={theme.colors.textMuted}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoComplete="email"
+                    />
+                  </View>
+                  {errors.email && <Text style={responsiveStyles.errorText}>{errors.email}</Text>}
+                </View>
+
+                <View style={responsiveStyles.inputContainer}>
+                  <Text style={responsiveStyles.label}>Contraseña</Text>
+                  <View style={[
+                    responsiveStyles.inputWrapper, 
+                    { borderColor: errors.password ? theme.colors.error : theme.colors.border }
+                  ]}>
+                    <Lock size={20} color={theme.colors.textMuted} style={responsiveStyles.inputIcon} />
+                    <TextInput
+                      style={responsiveStyles.input}
+                      value={password}
+                      onChangeText={setPassword}
+                      placeholder="••••••••"
+                      placeholderTextColor={theme.colors.textMuted}
+                      secureTextEntry={!showPassword}
+                      autoComplete="new-password"
+                    />
+                    <AnimatedButton
+                      title=""
+                      onPress={() => setShowPassword(!showPassword)}
+                      variant="ghost"
+                      size="sm"
+                      icon={showPassword ? <EyeOff size={20} color={theme.colors.textMuted} /> : <Eye size={20} color={theme.colors.textMuted} />}
+                      style={responsiveStyles.eyeButton}
+                    />
+                  </View>
+                  {errors.password && <Text style={responsiveStyles.errorText}>{errors.password}</Text>}
+                </View>
+
+                <View style={responsiveStyles.inputContainer}>
+                  <Text style={responsiveStyles.label}>Confirmar Contraseña</Text>
+                  <View style={[
+                    responsiveStyles.inputWrapper, 
+                    { borderColor: errors.confirmPassword ? theme.colors.error : theme.colors.border }
+                  ]}>
+                    <Lock size={20} color={theme.colors.textMuted} style={responsiveStyles.inputIcon} />
+                    <TextInput
+                      style={responsiveStyles.input}
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      placeholder="••••••••"
+                      placeholderTextColor={theme.colors.textMuted}
+                      secureTextEntry={!showConfirmPassword}
+                      autoComplete="new-password"
+                    />
+                    <AnimatedButton
+                      title=""
+                      onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                      variant="ghost"
+                      size="sm"
+                      icon={showConfirmPassword ? <EyeOff size={20} color={theme.colors.textMuted} /> : <Eye size={20} color={theme.colors.textMuted} />}
+                      style={responsiveStyles.eyeButton}
+                    />
+                  </View>
+                  {errors.confirmPassword && <Text style={responsiveStyles.errorText}>{errors.confirmPassword}</Text>}
+                </View>
+
+                <AnimatedButton
+                  title={loading ? 'Creando cuenta...' : 'Crear Cuenta'}
+                  onPress={handleRegister}
+                  variant="gradient"
+                  size="lg"
+                  disabled={loading}
+                  style={responsiveStyles.registerButton}
+                />
+
+                <View style={responsiveStyles.footer}>
+                  <Text style={responsiveStyles.footerText}>¿Ya tienes cuenta?</Text>
+                  <AnimatedButton
+                    title="Inicia sesión"
+                    onPress={() => router.push('/(auth)/login')}
+                    variant="ghost"
+                    size="sm"
+                    textStyle={{ color: theme.colors.primary, fontSize: fontSize.md }}
+                  />
+                </View>
+              </NeumorphicCard>
+            </Animated.View>
+          </ResponsiveContainer>
+        </ScrollView>
       </SafeAreaView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-  },
-  header: {
-    padding: 24,
-    paddingTop: 16,
-  },
-  backButton: {
-    alignSelf: 'flex-start',
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 32,
-    fontFamily: 'Inter_700Bold',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-  },
-  formContainer: {
-    flex: 1,
-    padding: 24,
-  },
-  formCard: {
-    padding: 32,
-  },
-  inputContainer: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 16,
-    fontFamily: 'Inter_600SemiBold',
-    marginBottom: 8,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    height: 56,
-  },
-  inputIcon: {
-    marginRight: 12,
-  },
-  input: {
-    flex: 1,
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-  },
-  eyeButton: {
-    padding: 8,
-    marginLeft: 8,
-  },
-  errorText: {
-    fontSize: 14,
-    fontFamily: 'Inter_400Regular',
-    marginTop: 4,
-  },
-  registerButton: {
-    marginTop: 8,
-    marginBottom: 24,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  footerText: {
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-  },
-});
