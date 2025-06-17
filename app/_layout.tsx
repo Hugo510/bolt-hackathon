@@ -11,6 +11,8 @@ import {
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 
 // Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -36,12 +38,18 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </GestureHandlerRootView>
+    <ThemeProvider>
+      <AuthProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <StatusBar style="auto" />
+        </GestureHandlerRootView>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

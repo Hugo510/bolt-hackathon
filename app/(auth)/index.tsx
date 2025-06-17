@@ -8,19 +8,20 @@ import Animated, {
   withSpring,
   withRepeat,
   withTiming,
-  interpolate,
   useAnimatedScrollHandler,
 } from 'react-native-reanimated';
 import { useEffect } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
 import AnimatedButton from '@/components/ui/AnimatedButton';
-import { Sparkles, ArrowRight, Moon, Sun } from 'lucide-react-native';
+import { Sparkles, ArrowRight, Moon, Sun, Heart, Brain, Users } from 'lucide-react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function AuthIndex() {
   const router = useRouter();
   const { theme, isDark, toggleTheme } = useTheme();
+  const { isFirstLaunch } = useAuth();
   
   const floatingY = useSharedValue(0);
   const scale = useSharedValue(1);
@@ -85,7 +86,7 @@ export default function AuthIndex() {
           <View style={styles.header}>
             <Animated.View style={[styles.imageContainer, floatingStyle]}>
               <Image
-                source={{ uri: 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg' }}
+                source={{ uri: 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&dpr=2' }}
                 style={styles.heroImage}
               />
               <View style={[styles.imageOverlay, { backgroundColor: theme.colors.primary + '20' }]} />
@@ -101,8 +102,10 @@ export default function AuthIndex() {
 
             <Animated.View style={floatingStyle}>
               <Text style={[styles.title, { color: theme.colors.text }]}>
-                Descubre tu{'\n'}
-                <Text style={{ color: theme.colors.primary }}>vocación</Text>
+                {isFirstLaunch ? '¡Bienvenido!' : 'Bienvenido de vuelta'}
+              </Text>
+              <Text style={[styles.mainTitle, { color: theme.colors.primary }]}>
+                Descubre tu vocación
               </Text>
               <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
                 Conecta con mentores, encuentra tu camino profesional y construye el futuro que deseas
@@ -110,10 +113,26 @@ export default function AuthIndex() {
             </Animated.View>
           </View>
 
+          {/* Características destacadas */}
+          <Animated.View style={[styles.features, floatingStyle]}>
+            {[
+              { icon: Brain, text: 'Tests vocacionales personalizados', color: theme.colors.primary },
+              { icon: Users, text: 'Mentores expertos certificados', color: theme.colors.secondary },
+              { icon: Heart, text: 'Apoyo emocional 24/7', color: theme.colors.accent },
+            ].map((feature, index) => (
+              <View key={index} style={[styles.featureItem, { backgroundColor: theme.colors.surface }]}>
+                <feature.icon size={20} color={feature.color} />
+                <Text style={[styles.featureText, { color: theme.colors.textSecondary }]}>
+                  {feature.text}
+                </Text>
+              </View>
+            ))}
+          </Animated.View>
+
           {/* Botones con animaciones */}
           <Animated.View style={[styles.buttonsContainer, floatingStyle]}>
             <AnimatedButton
-              title="Comenzar"
+              title="Comenzar mi viaje"
               onPress={() => router.push('/(auth)/register')}
               variant="gradient"
               size="lg"
@@ -130,19 +149,14 @@ export default function AuthIndex() {
             />
           </Animated.View>
 
-          {/* Indicadores de características */}
-          <Animated.View style={[styles.features, floatingStyle]}>
-            {[
-              '🧠 Tests vocacionales',
-              '👥 Mentores expertos',
-              '💬 Apoyo emocional',
-            ].map((feature, index) => (
-              <View key={index} style={[styles.featureItem, { backgroundColor: theme.colors.surface }]}>
-                <Text style={[styles.featureText, { color: theme.colors.textSecondary }]}>
-                  {feature}
-                </Text>
-              </View>
-            ))}
+          {/* Footer inspiracional */}
+          <Animated.View style={[styles.footer, floatingStyle]}>
+            <Text style={[styles.footerText, { color: theme.colors.textMuted }]}>
+              "El futuro pertenece a quienes creen en la belleza de sus sueños"
+            </Text>
+            <Text style={[styles.footerAuthor, { color: theme.colors.textMuted }]}>
+              - Eleanor Roosevelt
+            </Text>
           </Animated.View>
         </View>
       </SafeAreaView>
@@ -213,18 +227,46 @@ const styles = StyleSheet.create({
     left: 15,
   },
   title: {
+    fontSize: 24,
+    fontFamily: 'Inter-SemiBold',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  mainTitle: {
     fontSize: 36,
-    fontFamily: 'Inter_700Bold',
+    fontFamily: 'Inter-Bold',
     textAlign: 'center',
     marginBottom: 16,
     lineHeight: 44,
   },
   subtitle: {
     fontSize: 18,
-    fontFamily: 'Inter_400Regular',
+    fontFamily: 'Inter-Regular',
     textAlign: 'center',
     lineHeight: 26,
     paddingHorizontal: 20,
+  },
+  features: {
+    gap: 16,
+    marginBottom: 32,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  featureText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Medium',
+    marginLeft: 12,
+    flex: 1,
   },
   buttonsContainer: {
     gap: 16,
@@ -240,22 +282,19 @@ const styles = StyleSheet.create({
   secondaryButton: {
     borderWidth: 2,
   },
-  features: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingBottom: 40,
-    gap: 8,
-  },
-  featureItem: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRadius: 12,
+  footer: {
     alignItems: 'center',
+    paddingBottom: 20,
   },
-  featureText: {
-    fontSize: 12,
-    fontFamily: 'Inter_500Medium',
+  footerText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
     textAlign: 'center',
+    fontStyle: 'italic',
+    marginBottom: 4,
+  },
+  footerAuthor: {
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
   },
 });
