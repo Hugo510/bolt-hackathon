@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuthStore } from '@/stores/authStore';
 
 interface AuthContextType {
   session: Session | null;
@@ -11,21 +11,25 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
-  markOnboardingComplete: () => Promise<void>;
+  markOnboardingComplete: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isFirstLaunch, setIsFirstLaunch] = useState(false);
+  const {
+    session,
+    user,
+    loading,
+    isFirstLaunch,
+    setSession,
+    setUser,
+    setLoading,
+    setFirstLaunch,
+    clearAuth,
+  } = useAuthStore();
 
   useEffect(() => {
-    // Verificar si es el primer lanzamiento
-    checkFirstLaunch();
-    
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -49,18 +53,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  const checkFirstLaunch = async () => {
-    try {
-      const hasLaunched = await AsyncStorage.getItem('hasLaunched');
-      if (!hasLaunched) {
-        setIsFirstLaunch(true);
-        await AsyncStorage.setItem('hasLaunched', 'true');
-      }
-    } catch (error) {
-      console.error('Error checking first launch:', error);
-    }
-  };
 
   const createUserProfile = async (authUser: User) => {
     try {
@@ -103,14 +95,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    clearAuth();
   };
 
-  const markOnboardingComplete = async () => {
-    try {
-      await AsyncStorage.setItem('onboardingComplete', 'true');
-    } catch (error) {
-      console.error('Error marking onboarding complete:', error);
-    }
+  const markOnboardingComplete = () => {
+    setFirstLaunch(false);
   };
 
   return (

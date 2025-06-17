@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface UserProgress {
   totalPoints: number;
@@ -13,39 +13,43 @@ interface UserProgress {
   resourcesConsumed: number;
   postsCreated: number;
   commentsMade: number;
-  badgesEarned: number;
+  badgesEarned: string[];
+  lastActivityDate: string;
 }
 
 interface UserProgressState extends UserProgress {
-  addPoints: (points: number) => void;
+  addPoints: (points: number, reason?: string) => void;
   incrementTestsCompleted: () => void;
   incrementSessionsAttended: () => void;
   incrementResourcesConsumed: () => void;
   incrementPostsCreated: () => void;
   incrementCommentsMade: () => void;
-  updateStreak: (days: number) => void;
+  updateStreak: () => void;
+  addBadge: (badge: string) => void;
   resetProgress: () => void;
   setProgress: (progress: Partial<UserProgress>) => void;
+  getProgressToNextLevel: () => number;
+  getPointsToNextLevel: () => number;
 }
 
-const secureStorage = {
+const asyncStorage = {
   getItem: async (name: string): Promise<string | null> => {
     try {
-      return await SecureStore.getItemAsync(name);
+      return await AsyncStorage.getItem(name);
     } catch {
       return null;
     }
   },
   setItem: async (name: string, value: string): Promise<void> => {
     try {
-      await SecureStore.setItemAsync(name, value);
+      await AsyncStorage.setItem(name, value);
     } catch {
       // Silently fail
     }
   },
   removeItem: async (name: string): Promise<void> => {
     try {
-      await SecureStore.deleteItemAsync(name);
+      await AsyncStorage.removeItem(name);
     } catch {
       // Silently fail
     }
@@ -54,6 +58,36 @@ const secureStorage = {
 
 const calculateLevel = (experiencePoints: number): number => {
   return Math.floor(experiencePoints / 1000) + 1;
+};
+
+const getPointsForLevel = (level: number): number => {
+  return level * 1000;
+};
+
+const checkForNewBadges = (state: UserProgress): string[] => {
+  const newBadges: string[] = [];
+  
+  // Badge por completar primer test
+  if (state.testsCompleted >= 1 && !state.badgesEarned.includes('first-test')) {
+    newBadges.push('first-test');
+  }
+  
+  // Badge por racha de 7 días
+  if (state.streakDays >= 7 && !state.badgesEarned.includes('week-streak')) {
+    newBadges.push('week-streak');
+  }
+  
+  // Badge por 10 sesiones
+  if (state.sessionsAttended >= 10 && !state.badgesEarned.includes('mentor-enthusiast')) {
+    newBadges.push('mentor-enthusiast');
+  }
+  
+  // Badge por alcanzar nivel 5
+  if (state.currentLevel >= 5 && !state.badgesEarned.includes('level-5')) {
+    newBadges.push('level-5');
+  }
+  
+  return newBadges;
 };
 
 export const useUserProgressStore = create<UserProgressState>()(
@@ -69,57 +103,88 @@ export const useUserProgressStore = create<UserProgressState>()(
       resourcesConsumed: 0,
       postsCreated: 0,
       commentsMade: 0,
-      badgesEarned: 0,
+      badgesEarned: [],
+      lastActivityDate: new Date().toISOString().split('T')[0],
 
-      addPoints: (points) => {
+      addPoints: (points, reason) => {
         const state = get();
         const newExperiencePoints = state.experiencePoints + points;
         const newLevel = calculateLevel(newExperiencePoints);
+        const newBadges = checkForNewBadges({
+          ...state,
+          experiencePoints: newExperiencePoints,
+          currentLevel: newLevel,
+        });
         
         set({
           totalPoints: state.totalPoints + points,
           experiencePoints: newExperiencePoints,
           currentLevel: newLevel,
+          badgesEarned: [...state.badgesEarned, ...newBadges],
         });
       },
 
       incrementTestsCompleted: () => {
         const state = get();
         set({ testsCompleted: state.testsCompleted + 1 });
-        get().addPoints(100); // 100 puntos por completar un test
+        get().addPoints(100, 'Test completado');
+        get().updateStreak();
       },
 
       incrementSessionsAttended: () => {
         const state = get();
         set({ sessionsAttended: state.sessionsAttended + 1 });
-        get().addPoints(200); // 200 puntos por asistir a una sesión
+        get().addPoints(200, 'Sesión de mentoría');
+        get().updateStreak();
       },
 
       incrementResourcesConsumed: () => {
         const state = get();
         set({ resourcesConsumed: state.resourcesConsumed + 1 });
-        get().addPoints(50); // 50 puntos por consumir un recurso
+        get().addPoints(50, 'Recurso consumido');
+        get().updateStreak();
       },
 
       incrementPostsCreated: () => {
         const state = get();
         set({ postsCreated: state.postsCreated + 1 });
-        get().addPoints(75); // 75 puntos por crear un post
+        get().addPoints(75, 'Post creado');
+        get().updateStreak();
       },
 
       incrementCommentsMade: () => {
         const state = get();
         set({ commentsMade: state.commentsMade + 1 });
-        get().addPoints(25); // 25 puntos por hacer un comentario
+        get().addPoints(25, 'Comentario realizado');
       },
 
-      updateStreak: (days) => {
+      updateStreak: () => {
         const state = get();
-        const newLongestStreak = Math.max(state.longestStreak, days);
-        set({ 
-          streakDays: days,
-          longestStreak: newLongestStreak,
-        });
+        const today = new Date().toISOString().split('T')[0];
+        const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        
+        if (state.lastActivityDate === yesterday) {
+          // Continúa la racha
+          const newStreak = state.streakDays + 1;
+          set({
+            streakDays: newStreak,
+            longestStreak: Math.max(state.longestStreak, newStreak),
+            lastActivityDate: today,
+          });
+        } else if (state.lastActivityDate !== today) {
+          // Nueva racha o se rompió
+          set({
+            streakDays: 1,
+            lastActivityDate: today,
+          });
+        }
+      },
+
+      addBadge: (badge) => {
+        const state = get();
+        if (!state.badgesEarned.includes(badge)) {
+          set({ badgesEarned: [...state.badgesEarned, badge] });
+        }
       },
 
       resetProgress: () => {
@@ -134,17 +199,34 @@ export const useUserProgressStore = create<UserProgressState>()(
           resourcesConsumed: 0,
           postsCreated: 0,
           commentsMade: 0,
-          badgesEarned: 0,
+          badgesEarned: [],
+          lastActivityDate: new Date().toISOString().split('T')[0],
         });
       },
 
       setProgress: (progress) => {
         set((state) => ({ ...state, ...progress }));
       },
+
+      getProgressToNextLevel: () => {
+        const state = get();
+        const currentLevelPoints = getPointsForLevel(state.currentLevel - 1);
+        const nextLevelPoints = getPointsForLevel(state.currentLevel);
+        const progressInLevel = state.experiencePoints - currentLevelPoints;
+        const pointsNeededForLevel = nextLevelPoints - currentLevelPoints;
+        
+        return progressInLevel / pointsNeededForLevel;
+      },
+
+      getPointsToNextLevel: () => {
+        const state = get();
+        const nextLevelPoints = getPointsForLevel(state.currentLevel);
+        return nextLevelPoints - state.experiencePoints;
+      },
     }),
     {
       name: 'user-progress-storage',
-      storage: secureStorage,
+      storage: asyncStorage,
     }
   )
 );
