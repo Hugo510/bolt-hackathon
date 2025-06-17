@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { TrendingUp, Award, Target, Calendar, BarChart3 } from 'lucide-react-native';
+import { TrendingUp, Award, Target, Calendar, ChartBar as BarChart3 } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useUserProgressStore } from '@/stores/userProgressStore';
 import { useResponsive, useResponsiveSpacing, useResponsiveFontSize } from '@/hooks/useResponsive';
