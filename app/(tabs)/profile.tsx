@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Settings, Bell, Shield, HelpCircle, LogOut, ChevronRight, Moon, Star, Award, Calendar } from 'lucide-react-native';
+import { Settings, Bell, Shield, CircleHelp as HelpCircle, LogOut, ChevronRight, Moon, Star, Award, Calendar } from 'lucide-react-native';
 import { useState } from 'react';
 
 export default function ProfileScreen() {
