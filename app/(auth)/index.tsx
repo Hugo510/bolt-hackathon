@@ -2,38 +2,28 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-nati
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withRepeat,
-  withTiming,
-} from 'react-native-reanimated';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useResponsive, useResponsiveSpacing, useResponsiveFontSize } from '@/hooks/useResponsive';
 import ResponsiveContainer from '@/components/ui/ResponsiveContainer';
-import ResponsiveGrid from '@/components/ui/ResponsiveGrid';
 import BreathingCircle from '@/components/ui/BreathingCircle';
 import EmotionChip from '@/components/ui/EmotionChip';
-import { Heart, Brain, Users, MessageCircle, ArrowRight, Moon, Sun, Sparkles } from 'lucide-react-native';
+import AnimatedButton from '@/components/ui/AnimatedButton';
+import FadeInView from '@/components/animations/FadeInView';
+import ScaleInView from '@/components/animations/ScaleInView';
+import StaggeredList from '@/components/animations/StaggeredList';
+import SlideInView from '@/components/animations/SlideInView';
+import PulseView from '@/components/animations/PulseView';
+import { Heart, Brain, Users, MessageCircle, ArrowRight, Moon, Sun, Sparkles, Star } from 'lucide-react-native';
 
 export default function AuthIndex() {
   const router = useRouter();
   const { theme, isDark, toggleTheme } = useTheme();
-  const { isFirstLaunch } = useAuth();
   const { isMobile, isTablet, width, height, orientation } = useResponsive();
   const spacing = useResponsiveSpacing();
   const fontSize = useResponsiveFontSize();
   
-  // Animaciones principales
-  const breathingScale = useSharedValue(1);
-  const floatingY = useSharedValue(0);
-  const fadeIn = useSharedValue(0);
-  const slideUp = useSharedValue(50);
-  
-  // Estados para interactividad
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [currentQuote, setCurrentQuote] = useState(0);
 
@@ -74,46 +64,6 @@ export default function AuthIndex() {
     { text: "Tu única limitación eres tú mismo", author: "Anónimo" },
     { text: "El éxito es la suma de pequeños esfuerzos repetidos día tras día", author: "Robert Collier" },
   ];
-
-  useEffect(() => {
-    // Animación de respiración continua
-    breathingScale.value = withRepeat(
-      withTiming(1.1, { duration: 2000 }),
-      -1,
-      true
-    );
-
-    // Animación flotante
-    floatingY.value = withRepeat(
-      withTiming(-10, { duration: 3000 }),
-      -1,
-      true
-    );
-
-    // Animaciones de entrada
-    fadeIn.value = withTiming(1, { duration: 1000 });
-    slideUp.value = withSpring(0, { damping: 15, stiffness: 100 });
-
-    // Cambio automático de frases inspiracionales
-    const quoteInterval = setInterval(() => {
-      setCurrentQuote((prev) => (prev + 1) % inspirationalQuotes.length);
-    }, 4000);
-
-    return () => clearInterval(quoteInterval);
-  }, []);
-
-  const breathingStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: breathingScale.value }],
-  }));
-
-  const floatingStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: floatingY.value }],
-  }));
-
-  const fadeInStyle = useAnimatedStyle(() => ({
-    opacity: fadeIn.value,
-    transform: [{ translateY: slideUp.value }],
-  }));
 
   // Estilos responsivos dinámicos
   const responsiveStyles = StyleSheet.create({
@@ -256,43 +206,10 @@ export default function AuthIndex() {
       gap: spacing.md,
       flexDirection: isTablet && orientation === 'landscape' ? 'row' : 'column',
     },
-    primaryButton: {
-      borderRadius: 16,
-      overflow: 'hidden',
-      shadowColor: '#6366F1',
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.3,
-      shadowRadius: 16,
-      elevation: 12,
-      flex: isTablet && orientation === 'landscape' ? 1 : undefined,
-    },
-    gradientButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingVertical: isMobile ? 18 : 20,
-      paddingHorizontal: spacing.lg,
-      gap: spacing.sm,
-    },
-    primaryButtonText: {
-      fontSize: fontSize.md,
-      fontFamily: 'Inter_600SemiBold',
-      color: '#FFFFFF',
-    },
-    secondaryButton: {
-      borderRadius: 16,
-      paddingVertical: isMobile ? 18 : 20,
-      paddingHorizontal: spacing.lg,
-      alignItems: 'center',
-      borderWidth: 2,
-      backgroundColor: theme.colors.surface,
-      borderColor: theme.colors.border,
-      flex: isTablet && orientation === 'landscape' ? 1 : undefined,
-    },
-    secondaryButtonText: {
-      fontSize: fontSize.md,
-      fontFamily: 'Inter_600SemiBold',
-      color: theme.colors.primary,
+    sparkleContainer: {
+      position: 'absolute',
+      width: '100%',
+      height: '100%',
     },
   });
 
@@ -312,21 +229,22 @@ export default function AuthIndex() {
   );
 
   const FeatureCard = ({ feature, index }: { feature: typeof features[0], index: number }) => (
-    <Animated.View
-      style={[
-        responsiveStyles.featureCard,
-        fadeInStyle,
-        { backgroundColor: feature.color }
-      ]}
+    <FadeInView
+      delay={600 + index * 200}
+      direction="up"
     >
-      <View style={[responsiveStyles.featureIcon, { backgroundColor: feature.iconColor + '20' }]}>
-        <feature.icon size={isMobile ? 24 : 28} color={feature.iconColor} />
+      <View style={[responsiveStyles.featureCard, { backgroundColor: feature.color }]}>
+        <ScaleInView delay={800 + index * 200}>
+          <View style={[responsiveStyles.featureIcon, { backgroundColor: feature.iconColor + '20' }]}>
+            <feature.icon size={isMobile ? 24 : 28} color={feature.iconColor} />
+          </View>
+        </ScaleInView>
+        <View style={responsiveStyles.featureContent}>
+          <Text style={responsiveStyles.featureTitle}>{feature.title}</Text>
+          <Text style={responsiveStyles.featureDescription}>{feature.description}</Text>
+        </View>
       </View>
-      <View style={responsiveStyles.featureContent}>
-        <Text style={responsiveStyles.featureTitle}>{feature.title}</Text>
-        <Text style={responsiveStyles.featureDescription}>{feature.description}</Text>
-      </View>
-    </Animated.View>
+    </FadeInView>
   );
 
   return (
@@ -343,17 +261,19 @@ export default function AuthIndex() {
       />
 
       {/* Botón de tema */}
-      <TouchableOpacity
-        style={responsiveStyles.themeButton}
-        onPress={toggleTheme}
-        activeOpacity={0.7}
-      >
-        {isDark ? (
-          <Sun size={isMobile ? 20 : 24} color={theme.colors.accent} />
-        ) : (
-          <Moon size={isMobile ? 20 : 24} color={theme.colors.primary} />
-        )}
-      </TouchableOpacity>
+      <SlideInView delay={100} direction="right" distance={100}>
+        <TouchableOpacity
+          style={responsiveStyles.themeButton}
+          onPress={toggleTheme}
+          activeOpacity={0.7}
+        >
+          {isDark ? (
+            <Sun size={isMobile ? 20 : 24} color={theme.colors.accent} />
+          ) : (
+            <Moon size={isMobile ? 20 : 24} color={theme.colors.primary} />
+          )}
+        </TouchableOpacity>
+      </SlideInView>
 
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView 
@@ -362,87 +282,132 @@ export default function AuthIndex() {
         >
           <ResponsiveContainer maxWidth={{ mobile: '100%', tablet: 600, desktop: 800 }}>
             {/* Header con elemento de respiración */}
-            <Animated.View style={[responsiveStyles.header, fadeInStyle]}>
-              <Animated.View style={[responsiveStyles.breathingContainer, breathingStyle, floatingStyle]}>
-                <BreathingCircle 
-                  size={isMobile ? 100 : isTablet ? 120 : 140} 
-                  color={theme.colors.primary}
-                >
-                  <Heart size={isMobile ? 28 : 32} color={theme.colors.primary} />
-                </BreathingCircle>
-                <View style={StyleSheet.absoluteFill}>
-                  <Sparkles size={16} color={theme.colors.accent} style={{ position: 'absolute', top: 10, right: 15 }} />
-                  <Sparkles size={12} color={theme.colors.secondary} style={{ position: 'absolute', bottom: 20, left: 10 }} />
-                  <Sparkles size={14} color={theme.colors.success} style={{ position: 'absolute', top: 30, left: -5 }} />
+            <FadeInView delay={200} direction="down">
+              <View style={responsiveStyles.header}>
+                <View style={responsiveStyles.breathingContainer}>
+                  <PulseView duration={3000} minScale={1} maxScale={1.05}>
+                    <BreathingCircle 
+                      size={isMobile ? 100 : isTablet ? 120 : 140} 
+                      color={theme.colors.primary}
+                    >
+                      <Heart size={isMobile ? 28 : 32} color={theme.colors.primary} />
+                    </BreathingCircle>
+                  </PulseView>
+                  
+                  <View style={responsiveStyles.sparkleContainer}>
+                    <ScaleInView delay={800} bounce={true}>
+                      <Sparkles 
+                        size={16} 
+                        color={theme.colors.accent} 
+                        style={{ position: 'absolute', top: 10, right: 15 }} 
+                      />
+                    </ScaleInView>
+                    <ScaleInView delay={1000} bounce={true}>
+                      <Sparkles 
+                        size={12} 
+                        color={theme.colors.secondary} 
+                        style={{ position: 'absolute', bottom: 20, left: 10 }} 
+                      />
+                    </ScaleInView>
+                    <ScaleInView delay={1200} bounce={true}>
+                      <Sparkles 
+                        size={14} 
+                        color={theme.colors.success} 
+                        style={{ position: 'absolute', top: 30, left: -5 }} 
+                      />
+                    </ScaleInView>
+                  </View>
                 </View>
-              </Animated.View>
 
-              <Text style={responsiveStyles.welcomeText}>¡Bienvenido!</Text>
-              <Text style={responsiveStyles.mainTitle}>CarreraGuía</Text>
-              <Text style={responsiveStyles.subtitle}>
-                Tu compañero inteligente para descubrir tu vocación y cuidar tu bienestar emocional
-              </Text>
-            </Animated.View>
+                <FadeInView delay={400} direction="up">
+                  <Text style={responsiveStyles.welcomeText}>¡Bienvenido!</Text>
+                </FadeInView>
+                
+                <FadeInView delay={500} direction="up">
+                  <Text style={responsiveStyles.mainTitle}>CarreraGuía</Text>
+                </FadeInView>
+                
+                <FadeInView delay={600} direction="up">
+                  <Text style={responsiveStyles.subtitle}>
+                    Tu compañero inteligente para descubrir tu vocación y cuidar tu bienestar emocional
+                  </Text>
+                </FadeInView>
+              </View>
+            </FadeInView>
 
             {/* Selector de estado emocional */}
-            <Animated.View style={[responsiveStyles.moodSection, fadeInStyle]}>
-              <Text style={responsiveStyles.sectionTitle}>¿Cómo te sientes hoy?</Text>
-              <View style={responsiveStyles.moodGrid}>
-                {moods.map((mood, index) => (
-                  <MoodChip
-                    key={index}
-                    mood={mood}
-                    isSelected={selectedMood === mood.label}
-                    onPress={() => setSelectedMood(selectedMood === mood.label ? null : mood.label)}
-                  />
-                ))}
+            <FadeInView delay={800} direction="up">
+              <View style={responsiveStyles.moodSection}>
+                <Text style={responsiveStyles.sectionTitle}>¿Cómo te sientes hoy?</Text>
+                <View style={responsiveStyles.moodGrid}>
+                  <StaggeredList staggerDelay={100} initialDelay={1000}>
+                    {moods.map((mood, index) => (
+                      <MoodChip
+                        key={index}
+                        mood={mood}
+                        isSelected={selectedMood === mood.label}
+                        onPress={() => setSelectedMood(selectedMood === mood.label ? null : mood.label)}
+                      />
+                    ))}
+                  </StaggeredList>
+                </View>
               </View>
-            </Animated.View>
+            </FadeInView>
 
             {/* Características principales */}
-            <Animated.View style={[responsiveStyles.featuresSection, fadeInStyle]}>
-              <Text style={responsiveStyles.sectionTitle}>¿Qué puedes hacer?</Text>
-              {features.map((feature, index) => (
-                <FeatureCard key={index} feature={feature} index={index} />
-              ))}
-            </Animated.View>
+            <FadeInView delay={1200} direction="up">
+              <View style={responsiveStyles.featuresSection}>
+                <Text style={responsiveStyles.sectionTitle}>¿Qué puedes hacer?</Text>
+                {features.map((feature, index) => (
+                  <FeatureCard key={index} feature={feature} index={index} />
+                ))}
+              </View>
+            </FadeInView>
 
             {/* Frase inspiracional */}
-            <Animated.View style={[responsiveStyles.quoteCard, fadeInStyle]}>
-              <Text style={responsiveStyles.quoteText}>
-                "{inspirationalQuotes[currentQuote].text}"
-              </Text>
-              <Text style={responsiveStyles.quoteAuthor}>
-                - {inspirationalQuotes[currentQuote].author}
-              </Text>
-            </Animated.View>
+            <SlideInView delay={1800} direction="left">
+              <View style={responsiveStyles.quoteCard}>
+                <ScaleInView delay={2000}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
+                    <Star size={20} color={theme.colors.primary} />
+                    <Text style={[responsiveStyles.quoteText, { marginLeft: 8, marginBottom: 0, fontStyle: 'normal', fontWeight: '600' }]}>
+                      Inspiración del día
+                    </Text>
+                  </View>
+                </ScaleInView>
+                
+                <FadeInView delay={2200}>
+                  <Text style={responsiveStyles.quoteText}>
+                    "{inspirationalQuotes[currentQuote].text}"
+                  </Text>
+                  <Text style={responsiveStyles.quoteAuthor}>
+                    - {inspirationalQuotes[currentQuote].author}
+                  </Text>
+                </FadeInView>
+              </View>
+            </SlideInView>
 
             {/* Botones de acción */}
-            <Animated.View style={[responsiveStyles.actionButtons, fadeInStyle]}>
-              <TouchableOpacity
-                style={responsiveStyles.primaryButton}
-                onPress={() => router.push('/(auth)/register')}
-                activeOpacity={0.8}
-              >
-                <LinearGradient
-                  colors={theme.colors.gradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={responsiveStyles.gradientButton}
-                >
-                  <Text style={responsiveStyles.primaryButtonText}>Comenzar mi viaje</Text>
-                  <ArrowRight size={20} color="#FFFFFF" />
-                </LinearGradient>
-              </TouchableOpacity>
+            <View style={responsiveStyles.actionButtons}>
+              <SlideInView delay={2400} direction="up">
+                <AnimatedButton
+                  title="Comenzar mi viaje"
+                  onPress={() => router.push('/(auth)/register')}
+                  variant="gradient"
+                  size="lg"
+                  icon={<ArrowRight size={20} color="#FFFFFF" />}
+                />
+              </SlideInView>
 
-              <TouchableOpacity
-                style={responsiveStyles.secondaryButton}
-                onPress={() => router.push('/(auth)/login')}
-                activeOpacity={0.7}
-              >
-                <Text style={responsiveStyles.secondaryButtonText}>Ya tengo cuenta</Text>
-              </TouchableOpacity>
-            </Animated.View>
+              <SlideInView delay={2600} direction="up">
+                <AnimatedButton
+                  title="Ya tengo cuenta"
+                  onPress={() => router.push('/(auth)/login')}
+                  variant="secondary"
+                  size="lg"
+                />
+              </SlideInView>
+            </View>
           </ResponsiveContainer>
         </ScrollView>
       </SafeAreaView>

@@ -7,7 +7,9 @@ import Animated, {
   withTiming,
   interpolate,
   runOnJS,
+  withSequence,
 } from 'react-native-reanimated';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/contexts/ThemeContext';
 
@@ -40,23 +42,33 @@ export default function AnimatedButton({
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
   const rotation = useSharedValue(0);
+  const shimmer = useSharedValue(0);
 
-  const handlePressIn = () => {
-    scale.value = withSpring(0.95, { damping: 15, stiffness: 300 });
-    opacity.value = withTiming(0.8, { duration: 100 });
-  };
-
-  const handlePressOut = () => {
-    scale.value = withSpring(1, { damping: 15, stiffness: 300 });
-    opacity.value = withTiming(1, { duration: 100 });
-    
-    if (!disabled && !loading) {
-      rotation.value = withTiming(360, { duration: 200 }, () => {
-        rotation.value = 0;
-        runOnJS(onPress)();
-      });
-    }
-  };
+  const tap = Gesture.Tap()
+    .onBegin(() => {
+      scale.value = withSpring(0.95, { damping: 15, stiffness: 300 });
+      opacity.value = withTiming(0.8, { duration: 100 });
+    })
+    .onFinalize(() => {
+      scale.value = withSequence(
+        withSpring(1.02, { damping: 10, stiffness: 300 }),
+        withSpring(1, { damping: 15, stiffness: 300 })
+      );
+      opacity.value = withTiming(1, { duration: 150 });
+      
+      if (!disabled && !loading) {
+        rotation.value = withTiming(360, { duration: 200 }, () => {
+          rotation.value = 0;
+          runOnJS(onPress)();
+        });
+        
+        // Shimmer effect
+        shimmer.value = withSequence(
+          withTiming(1, { duration: 300 }),
+          withTiming(0, { duration: 300 })
+        );
+      }
+    });
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -65,6 +77,21 @@ export default function AnimatedButton({
     ],
     opacity: opacity.value,
   }));
+
+  const shimmerStyle = useAnimatedStyle(() => {
+    const shimmerOpacity = interpolate(shimmer.value, [0, 1], [0, 0.3]);
+    
+    return {
+      position: 'absolute' as const,
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: '#FFFFFF',
+      opacity: shimmerOpacity,
+      borderRadius: theme.borderRadius.md,
+    };
+  });
 
   const getButtonStyle = () => {
     const baseStyle = {
@@ -77,6 +104,7 @@ export default function AnimatedButton({
       shadowOpacity: 0.15,
       shadowRadius: 8,
       elevation: 4,
+      overflow: 'hidden' as const,
     };
 
     const sizeStyles = {
@@ -138,39 +166,40 @@ export default function AnimatedButton({
     <>
       {icon}
       <Text style={getTextStyle()}>{loading ? 'Cargando...' : title}</Text>
+      <Animated.View style={shimmerStyle} />
     </>
   );
 
   if (variant === 'gradient') {
     return (
-      <AnimatedTouchable
-        style={[animatedStyle, style]}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        disabled={disabled || loading}
-        activeOpacity={1}
-      >
-        <LinearGradient
-          colors={theme.colors.gradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={getButtonStyle()}
+      <GestureDetector gesture={tap}>
+        <AnimatedTouchable
+          style={[animatedStyle, style]}
+          disabled={disabled || loading}
+          activeOpacity={1}
         >
-          {buttonContent}
-        </LinearGradient>
-      </AnimatedTouchable>
+          <LinearGradient
+            colors={theme.colors.gradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={getButtonStyle()}
+          >
+            {buttonContent}
+          </LinearGradient>
+        </AnimatedTouchable>
+      </GestureDetector>
     );
   }
 
   return (
-    <AnimatedTouchable
-      style={[animatedStyle, getButtonStyle(), style]}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      disabled={disabled || loading}
-      activeOpacity={1}
-    >
-      {buttonContent}
-    </AnimatedTouchable>
+    <GestureDetector gesture={tap}>
+      <AnimatedTouchable
+        style={[animatedStyle, getButtonStyle(), style]}
+        disabled={disabled || loading}
+        activeOpacity={1}
+      >
+        {buttonContent}
+      </AnimatedTouchable>
+    </GestureDetector>
   );
 }

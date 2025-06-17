@@ -3,18 +3,15 @@ import { View, Text, TextInput, StyleSheet, Alert, ScrollView } from 'react-nati
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Eye, EyeOff, Mail, Lock, User } from 'lucide-react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useResponsive, useResponsiveSpacing, useResponsiveFontSize } from '@/hooks/useResponsive';
 import ResponsiveContainer from '@/components/ui/ResponsiveContainer';
 import AnimatedButton from '@/components/ui/AnimatedButton';
 import NeumorphicCard from '@/components/ui/NeumorphicCard';
+import FadeInView from '@/components/animations/FadeInView';
+import SlideInView from '@/components/animations/SlideInView';
+import StaggeredList from '@/components/animations/StaggeredList';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function RegisterScreen() {
@@ -38,19 +35,6 @@ export default function RegisterScreen() {
     password?: string;
     confirmPassword?: string;
   }>({});
-
-  const translateY = useSharedValue(50);
-  const opacity = useSharedValue(0);
-
-  useState(() => {
-    translateY.value = withSpring(0, { damping: 15, stiffness: 100 });
-    opacity.value = withTiming(1, { duration: 800 });
-  });
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-    opacity: opacity.value,
-  }));
 
   const validateForm = () => {
     const newErrors: {
@@ -196,6 +180,53 @@ export default function RegisterScreen() {
     },
   });
 
+  const inputFields = [
+    {
+      label: 'Nombre Completo',
+      value: fullName,
+      onChangeText: setFullName,
+      placeholder: 'Tu nombre completo',
+      icon: User,
+      error: errors.fullName,
+      autoComplete: 'name' as const,
+    },
+    {
+      label: 'Email',
+      value: email,
+      onChangeText: setEmail,
+      placeholder: 'tu@email.com',
+      icon: Mail,
+      error: errors.email,
+      keyboardType: 'email-address' as const,
+      autoCapitalize: 'none' as const,
+      autoComplete: 'email' as const,
+    },
+    {
+      label: 'Contraseña',
+      value: password,
+      onChangeText: setPassword,
+      placeholder: '••••••••',
+      icon: Lock,
+      error: errors.password,
+      secureTextEntry: !showPassword,
+      showPassword,
+      togglePassword: () => setShowPassword(!showPassword),
+      autoComplete: 'new-password' as const,
+    },
+    {
+      label: 'Confirmar Contraseña',
+      value: confirmPassword,
+      onChangeText: setConfirmPassword,
+      placeholder: '••••••••',
+      icon: Lock,
+      error: errors.confirmPassword,
+      secureTextEntry: !showConfirmPassword,
+      showPassword: showConfirmPassword,
+      togglePassword: () => setShowConfirmPassword(!showConfirmPassword),
+      autoComplete: 'new-password' as const,
+    },
+  ];
+
   return (
     <View style={responsiveStyles.container}>
       {/* Fondo con gradiente */}
@@ -215,141 +246,91 @@ export default function RegisterScreen() {
         >
           <ResponsiveContainer maxWidth={{ mobile: '100%', tablet: 500, desktop: 600 }}>
             {/* Header */}
-            <View style={responsiveStyles.header}>
-              <AnimatedButton
-                title=""
-                onPress={() => router.back()}
-                variant="ghost"
-                size="sm"
-                icon={<ArrowLeft size={24} color={theme.colors.text} />}
-                style={responsiveStyles.backButton}
-              />
-              <Text style={responsiveStyles.title}>Crear Cuenta</Text>
-              <Text style={responsiveStyles.subtitle}>
-                Únete a nuestra comunidad
-              </Text>
-            </View>
+            <SlideInView delay={0} direction="down">
+              <View style={responsiveStyles.header}>
+                <AnimatedButton
+                  title=""
+                  onPress={() => router.back()}
+                  variant="ghost"
+                  size="sm"
+                  icon={<ArrowLeft size={24} color={theme.colors.text} />}
+                  style={responsiveStyles.backButton}
+                />
+                <FadeInView delay={200}>
+                  <Text style={responsiveStyles.title}>Crear Cuenta</Text>
+                  <Text style={responsiveStyles.subtitle}>
+                    Únete a nuestra comunidad
+                  </Text>
+                </FadeInView>
+              </View>
+            </SlideInView>
 
             {/* Formulario */}
-            <Animated.View style={[responsiveStyles.formContainer, animatedStyle]}>
-              <NeumorphicCard style={responsiveStyles.formCard}>
-                <View style={responsiveStyles.inputContainer}>
-                  <Text style={responsiveStyles.label}>Nombre Completo</Text>
-                  <View style={[
-                    responsiveStyles.inputWrapper, 
-                    { borderColor: errors.fullName ? theme.colors.error : theme.colors.border }
-                  ]}>
-                    <User size={20} color={theme.colors.textMuted} style={responsiveStyles.inputIcon} />
-                    <TextInput
-                      style={responsiveStyles.input}
-                      value={fullName}
-                      onChangeText={setFullName}
-                      placeholder="Tu nombre completo"
-                      placeholderTextColor={theme.colors.textMuted}
-                      autoComplete="name"
-                    />
-                  </View>
-                  {errors.fullName && <Text style={responsiveStyles.errorText}>{errors.fullName}</Text>}
-                </View>
+            <SlideInView delay={400} direction="up">
+              <View style={responsiveStyles.formContainer}>
+                <NeumorphicCard style={responsiveStyles.formCard}>
+                  <StaggeredList staggerDelay={100} initialDelay={600}>
+                    {inputFields.map((field, index) => (
+                      <View key={index} style={responsiveStyles.inputContainer}>
+                        <Text style={responsiveStyles.label}>{field.label}</Text>
+                        <View style={[
+                          responsiveStyles.inputWrapper, 
+                          { borderColor: field.error ? theme.colors.error : theme.colors.border }
+                        ]}>
+                          <field.icon size={20} color={theme.colors.textMuted} style={responsiveStyles.inputIcon} />
+                          <TextInput
+                            style={responsiveStyles.input}
+                            value={field.value}
+                            onChangeText={field.onChangeText}
+                            placeholder={field.placeholder}
+                            placeholderTextColor={theme.colors.textMuted}
+                            keyboardType={field.keyboardType}
+                            autoCapitalize={field.autoCapitalize}
+                            autoComplete={field.autoComplete}
+                            secureTextEntry={field.secureTextEntry}
+                          />
+                          {field.togglePassword && (
+                            <AnimatedButton
+                              title=""
+                              onPress={field.togglePassword}
+                              variant="ghost"
+                              size="sm"
+                              icon={field.showPassword ? <EyeOff size={20} color={theme.colors.textMuted} /> : <Eye size={20} color={theme.colors.textMuted} />}
+                              style={responsiveStyles.eyeButton}
+                            />
+                          )}
+                        </View>
+                        {field.error && <Text style={responsiveStyles.errorText}>{field.error}</Text>}
+                      </View>
+                    ))}
+                  </StaggeredList>
 
-                <View style={responsiveStyles.inputContainer}>
-                  <Text style={responsiveStyles.label}>Email</Text>
-                  <View style={[
-                    responsiveStyles.inputWrapper, 
-                    { borderColor: errors.email ? theme.colors.error : theme.colors.border }
-                  ]}>
-                    <Mail size={20} color={theme.colors.textMuted} style={responsiveStyles.inputIcon} />
-                    <TextInput
-                      style={responsiveStyles.input}
-                      value={email}
-                      onChangeText={setEmail}
-                      placeholder="tu@email.com"
-                      placeholderTextColor={theme.colors.textMuted}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      autoComplete="email"
-                    />
-                  </View>
-                  {errors.email && <Text style={responsiveStyles.errorText}>{errors.email}</Text>}
-                </View>
-
-                <View style={responsiveStyles.inputContainer}>
-                  <Text style={responsiveStyles.label}>Contraseña</Text>
-                  <View style={[
-                    responsiveStyles.inputWrapper, 
-                    { borderColor: errors.password ? theme.colors.error : theme.colors.border }
-                  ]}>
-                    <Lock size={20} color={theme.colors.textMuted} style={responsiveStyles.inputIcon} />
-                    <TextInput
-                      style={responsiveStyles.input}
-                      value={password}
-                      onChangeText={setPassword}
-                      placeholder="••••••••"
-                      placeholderTextColor={theme.colors.textMuted}
-                      secureTextEntry={!showPassword}
-                      autoComplete="new-password"
-                    />
+                  <FadeInView delay={1200}>
                     <AnimatedButton
-                      title=""
-                      onPress={() => setShowPassword(!showPassword)}
-                      variant="ghost"
-                      size="sm"
-                      icon={showPassword ? <EyeOff size={20} color={theme.colors.textMuted} /> : <Eye size={20} color={theme.colors.textMuted} />}
-                      style={responsiveStyles.eyeButton}
+                      title={loading ? 'Creando cuenta...' : 'Crear Cuenta'}
+                      onPress={handleRegister}
+                      variant="gradient"
+                      size="lg"
+                      disabled={loading}
+                      style={responsiveStyles.registerButton}
                     />
-                  </View>
-                  {errors.password && <Text style={responsiveStyles.errorText}>{errors.password}</Text>}
-                </View>
+                  </FadeInView>
 
-                <View style={responsiveStyles.inputContainer}>
-                  <Text style={responsiveStyles.label}>Confirmar Contraseña</Text>
-                  <View style={[
-                    responsiveStyles.inputWrapper, 
-                    { borderColor: errors.confirmPassword ? theme.colors.error : theme.colors.border }
-                  ]}>
-                    <Lock size={20} color={theme.colors.textMuted} style={responsiveStyles.inputIcon} />
-                    <TextInput
-                      style={responsiveStyles.input}
-                      value={confirmPassword}
-                      onChangeText={setConfirmPassword}
-                      placeholder="••••••••"
-                      placeholderTextColor={theme.colors.textMuted}
-                      secureTextEntry={!showConfirmPassword}
-                      autoComplete="new-password"
-                    />
-                    <AnimatedButton
-                      title=""
-                      onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                      variant="ghost"
-                      size="sm"
-                      icon={showConfirmPassword ? <EyeOff size={20} color={theme.colors.textMuted} /> : <Eye size={20} color={theme.colors.textMuted} />}
-                      style={responsiveStyles.eyeButton}
-                    />
-                  </View>
-                  {errors.confirmPassword && <Text style={responsiveStyles.errorText}>{errors.confirmPassword}</Text>}
-                </View>
-
-                <AnimatedButton
-                  title={loading ? 'Creando cuenta...' : 'Crear Cuenta'}
-                  onPress={handleRegister}
-                  variant="gradient"
-                  size="lg"
-                  disabled={loading}
-                  style={responsiveStyles.registerButton}
-                />
-
-                <View style={responsiveStyles.footer}>
-                  <Text style={responsiveStyles.footerText}>¿Ya tienes cuenta?</Text>
-                  <AnimatedButton
-                    title="Inicia sesión"
-                    onPress={() => router.push('/(auth)/login')}
-                    variant="ghost"
-                    size="sm"
-                    textStyle={{ color: theme.colors.primary, fontSize: fontSize.md }}
-                  />
-                </View>
-              </NeumorphicCard>
-            </Animated.View>
+                  <FadeInView delay={1300}>
+                    <View style={responsiveStyles.footer}>
+                      <Text style={responsiveStyles.footerText}>¿Ya tienes cuenta?</Text>
+                      <AnimatedButton
+                        title="Inicia sesión"
+                        onPress={() => router.push('/(auth)/login')}
+                        variant="ghost"
+                        size="sm"
+                        textStyle={{ color: theme.colors.primary, fontSize: fontSize.md }}
+                      />
+                    </View>
+                  </FadeInView>
+                </NeumorphicCard>
+              </View>
+            </SlideInView>
           </ResponsiveContainer>
         </ScrollView>
       </SafeAreaView>

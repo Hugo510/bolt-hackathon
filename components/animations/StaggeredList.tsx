@@ -5,17 +5,23 @@ interface StaggeredListProps {
   children: React.ReactNode[];
   staggerDelay?: number;
   initialDelay?: number;
+  direction?: 'up' | 'down' | 'left' | 'right' | 'none';
 }
 
 export default function StaggeredList({
   children,
-  staggerDelay = 100,
+  staggerDelay = 150,
   initialDelay = 0,
+  direction = 'up',
 }: StaggeredListProps) {
   return (
     <>
       {React.Children.map(children, (child, index) => (
-        <FadeInView delay={initialDelay + index * staggerDelay}>
+        <FadeInView 
+          key={index}
+          delay={initialDelay + index * staggerDelay}
+          direction={direction}
+        >
           {child}
         </FadeInView>
       ))}

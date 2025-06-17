@@ -10,10 +10,11 @@ import ResponsiveImage from '@/components/ui/ResponsiveImage';
 import FadeInView from '@/components/animations/FadeInView';
 import ScaleInView from '@/components/animations/ScaleInView';
 import StaggeredList from '@/components/animations/StaggeredList';
+import SlideInView from '@/components/animations/SlideInView';
 import ProgressBar from '@/components/animations/ProgressBar';
-import AnimatedButton from '@/components/animations/AnimatedButton';
-import EmotionChip from '@/components/animations/EmotionChip';
-import TypingText from '@/components/animations/TypingText';
+import AnimatedButton from '@/components/ui/AnimatedButton';
+import EmotionChip from '@/components/ui/EmotionChip';
+import PulseView from '@/components/animations/PulseView';
 import { useState } from 'react';
 
 export default function HomeScreen() {
@@ -24,7 +25,6 @@ export default function HomeScreen() {
   const fontSize = useResponsiveFontSize();
   
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
-  const [showTyping, setShowTyping] = useState(false);
 
   const quickActions = [
     {
@@ -82,13 +82,13 @@ export default function HomeScreen() {
     },
     greeting: {
       fontSize: isMobile ? fontSize.xl : fontSize.xxl,
-      fontFamily: 'Inter-Bold',
+      fontFamily: 'Inter_700Bold',
       color: theme.colors.text,
       marginBottom: spacing.xs,
     },
     subtitle: {
       fontSize: fontSize.md,
-      fontFamily: 'Inter-Regular',
+      fontFamily: 'Inter_400Regular',
       color: theme.colors.textSecondary,
     },
     profileContainer: {
@@ -103,7 +103,7 @@ export default function HomeScreen() {
     },
     sectionTitle: {
       fontSize: fontSize.lg,
-      fontFamily: 'Inter-SemiBold',
+      fontFamily: 'Inter_600SemiBold',
       color: theme.colors.text,
       marginBottom: spacing.md,
     },
@@ -132,12 +132,12 @@ export default function HomeScreen() {
     },
     progressTitle: {
       fontSize: fontSize.lg,
-      fontFamily: 'Inter-SemiBold',
+      fontFamily: 'Inter_600SemiBold',
       color: theme.colors.text,
     },
     progressSubtitle: {
       fontSize: fontSize.sm,
-      fontFamily: 'Inter-Regular',
+      fontFamily: 'Inter_400Regular',
       color: theme.colors.textSecondary,
       marginTop: spacing.xs,
     },
@@ -159,12 +159,12 @@ export default function HomeScreen() {
     },
     statNumber: {
       fontSize: fontSize.xl,
-      fontFamily: 'Inter-Bold',
+      fontFamily: 'Inter_700Bold',
       color: theme.colors.text,
     },
     statLabel: {
       fontSize: fontSize.xs,
-      fontFamily: 'Inter-Regular',
+      fontFamily: 'Inter_400Regular',
       color: theme.colors.textSecondary,
       marginTop: spacing.xs,
     },
@@ -200,14 +200,14 @@ export default function HomeScreen() {
     },
     actionTitle: {
       fontSize: fontSize.md,
-      fontFamily: 'Inter-SemiBold',
+      fontFamily: 'Inter_600SemiBold',
       color: theme.colors.text,
       marginBottom: spacing.xs,
       textAlign: isMobile ? 'center' : 'left',
     },
     actionSubtitle: {
       fontSize: fontSize.sm,
-      fontFamily: 'Inter-Regular',
+      fontFamily: 'Inter_400Regular',
       color: theme.colors.textSecondary,
       textAlign: isMobile ? 'center' : 'left',
     },
@@ -224,20 +224,20 @@ export default function HomeScreen() {
     },
     inspirationTitle: {
       fontSize: fontSize.md,
-      fontFamily: 'Inter-SemiBold',
+      fontFamily: 'Inter_600SemiBold',
       color: '#92400E',
       marginLeft: spacing.sm,
     },
     inspirationText: {
       fontSize: fontSize.md,
-      fontFamily: 'Inter-Regular',
+      fontFamily: 'Inter_400Regular',
       color: '#92400E',
       lineHeight: fontSize.md * 1.5,
       marginBottom: spacing.sm,
     },
     inspirationAuthor: {
       fontSize: fontSize.sm,
-      fontFamily: 'Inter-Medium',
+      fontFamily: 'Inter_500Medium',
       color: '#92400E',
       textAlign: 'right',
     },
@@ -251,17 +251,19 @@ export default function HomeScreen() {
           <FadeInView delay={0}>
             <View style={responsiveStyles.header}>
               <View style={responsiveStyles.headerText}>
-                <Text style={responsiveStyles.greeting}>¡Hola, María! 👋</Text>
+                <Text style={responsiveStyles.greeting}>¡Hola! 👋</Text>
                 <Text style={responsiveStyles.subtitle}>¿Cómo te sientes hoy?</Text>
               </View>
               <ScaleInView delay={200}>
-                <View style={responsiveStyles.profileContainer}>
-                  <ResponsiveImage
-                    source={{ uri: 'https://images.pexels.com/photos/3769021/pexels-photo-3769021.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2' }}
-                    aspectRatio={1}
-                    borderRadius={isMobile ? 24 : 28}
-                  />
-                </View>
+                <PulseView duration={3000}>
+                  <View style={responsiveStyles.profileContainer}>
+                    <ResponsiveImage
+                      source={{ uri: 'https://images.pexels.com/photos/3769021/pexels-photo-3769021.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2' }}
+                      aspectRatio={1}
+                      borderRadius={isMobile ? 24 : 28}
+                    />
+                  </View>
+                </PulseView>
               </ScaleInView>
             </View>
           </FadeInView>
@@ -271,35 +273,40 @@ export default function HomeScreen() {
             <View style={responsiveStyles.moodSection}>
               <Text style={responsiveStyles.sectionTitle}>¿Cómo te sientes?</Text>
               <View style={responsiveStyles.moodContainer}>
-                {moods.map((mood, index) => (
-                  <EmotionChip
-                    key={index}
-                    emoji={mood.emoji}
-                    label={mood.label}
-                    selected={selectedMood === mood.label}
-                    onPress={() => setSelectedMood(selectedMood === mood.label ? null : mood.label)}
-                    color={mood.color}
-                  />
-                ))}
+                <StaggeredList staggerDelay={100} initialDelay={400}>
+                  {moods.map((mood, index) => (
+                    <EmotionChip
+                      key={index}
+                      emoji={mood.emoji}
+                      label={mood.label}
+                      selected={selectedMood === mood.label}
+                      onPress={() => setSelectedMood(selectedMood === mood.label ? null : mood.label)}
+                      backgroundColor={mood.color + '20'}
+                      textColor={mood.color}
+                    />
+                  ))}
+                </StaggeredList>
               </View>
             </View>
           </FadeInView>
 
           {/* Progress Card */}
-          <ScaleInView delay={500}>
+          <SlideInView delay={800} direction="up">
             <View style={responsiveStyles.progressCard}>
               <View style={responsiveStyles.progressHeader}>
                 <View>
                   <Text style={responsiveStyles.progressTitle}>Tu Progreso</Text>
                   <Text style={responsiveStyles.progressSubtitle}>Nivel 3 • 750/1000 XP</Text>
                 </View>
-                <View style={responsiveStyles.levelBadge}>
-                  <TrendingUp size={isMobile ? 20 : 24} color="#6366F1" />
-                </View>
+                <ScaleInView delay={1000}>
+                  <View style={responsiveStyles.levelBadge}>
+                    <TrendingUp size={isMobile ? 20 : 24} color="#6366F1" />
+                  </View>
+                </ScaleInView>
               </View>
-              <ProgressBar progress={0.75} delay={800} />
+              <ProgressBar progress={0.75} delay={1200} />
               <View style={responsiveStyles.statsContainer}>
-                <StaggeredList staggerDelay={100} initialDelay={1000}>
+                <StaggeredList staggerDelay={100} initialDelay={1400}>
                   <View style={responsiveStyles.stat}>
                     <Text style={responsiveStyles.statNumber}>3</Text>
                     <Text style={responsiveStyles.statLabel}>Tests</Text>
@@ -315,63 +322,60 @@ export default function HomeScreen() {
                 </StaggeredList>
               </View>
             </View>
-          </ScaleInView>
+          </SlideInView>
 
           {/* Quick Actions */}
-          <FadeInView delay={700}>
+          <FadeInView delay={1600}>
             <View style={responsiveStyles.actionsSection}>
               <Text style={responsiveStyles.sectionTitle}>Acciones Rápidas</Text>
               <ResponsiveGrid 
                 columns={{ mobile: 1, tablet: 2, desktop: 3 }}
                 gap={spacing.md}
               >
-                {quickActions.map((action) => (
-                  <AnimatedButton
-                    key={action.id}
-                    onPress={() => router.push(action.route as any)}
-                    variant="ghost"
-                  >
-                    <View style={responsiveStyles.actionCard}>
-                      <View style={[responsiveStyles.actionIcon, { backgroundColor: action.color }]}>
-                        <action.icon size={isMobile ? 24 : 28} color={action.iconColor} />
+                <StaggeredList staggerDelay={150} initialDelay={1800}>
+                  {quickActions.map((action) => (
+                    <AnimatedButton
+                      key={action.id}
+                      title=""
+                      onPress={() => router.push(action.route as any)}
+                      variant="ghost"
+                    >
+                      <View style={responsiveStyles.actionCard}>
+                        <ScaleInView delay={2000 + action.id * 100}>
+                          <View style={[responsiveStyles.actionIcon, { backgroundColor: action.color }]}>
+                            <action.icon size={isMobile ? 24 : 28} color={action.iconColor} />
+                          </View>
+                        </ScaleInView>
+                        <View style={responsiveStyles.actionContent}>
+                          <Text style={responsiveStyles.actionTitle}>{action.title}</Text>
+                          <Text style={responsiveStyles.actionSubtitle}>{action.subtitle}</Text>
+                        </View>
                       </View>
-                      <View style={responsiveStyles.actionContent}>
-                        <Text style={responsiveStyles.actionTitle}>{action.title}</Text>
-                        <Text style={responsiveStyles.actionSubtitle}>{action.subtitle}</Text>
-                      </View>
-                    </View>
-                  </AnimatedButton>
-                ))}
+                    </AnimatedButton>
+                  ))}
+                </StaggeredList>
               </ResponsiveGrid>
             </View>
           </FadeInView>
 
           {/* Daily Inspiration */}
-          <ScaleInView delay={1200}>
+          <SlideInView delay={2400} direction="left">
             <View style={responsiveStyles.inspirationCard}>
-              <View style={responsiveStyles.inspirationHeader}>
-                <Star size={20} color="#F59E0B" />
-                <Text style={responsiveStyles.inspirationTitle}>Inspiración del día</Text>
-              </View>
-              {showTyping ? (
-                <TypingText
-                  text="El futuro pertenece a quienes creen en la belleza de sus sueños."
-                  speed={30}
-                  style={responsiveStyles.inspirationText}
-                  onComplete={() => {
-                    setTimeout(() => setShowTyping(false), 2000);
-                  }}
-                />
-              ) : (
-                <TouchableOpacity onPress={() => setShowTyping(true)}>
-                  <Text style={responsiveStyles.inspirationText}>
-                    "El futuro pertenece a quienes creen en la belleza de sus sueños."
-                  </Text>
-                </TouchableOpacity>
-              )}
-              <Text style={responsiveStyles.inspirationAuthor}>- Eleanor Roosevelt</Text>
+              <ScaleInView delay={2600}>
+                <View style={responsiveStyles.inspirationHeader}>
+                  <Star size={20} color="#F59E0B" />
+                  <Text style={responsiveStyles.inspirationTitle}>Inspiración del día</Text>
+                </View>
+              </ScaleInView>
+              
+              <FadeInView delay={2800}>
+                <Text style={responsiveStyles.inspirationText}>
+                  "El futuro pertenece a quienes creen en la belleza de sus sueños."
+                </Text>
+                <Text style={responsiveStyles.inspirationAuthor}>- Eleanor Roosevelt</Text>
+              </FadeInView>
             </View>
-          </ScaleInView>
+          </SlideInView>
         </ResponsiveContainer>
       </ScrollView>
     </SafeAreaView>
