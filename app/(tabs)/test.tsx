@@ -1,255 +1,173 @@
-import { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Brain, ChevronRight, RotateCcw } from 'lucide-react-native';
+import { Brain, ArrowRight, Clock, Users, Star } from 'lucide-react-native';
+import { useState } from 'react';
 
-interface Question {
-  id: number;
-  question: string;
-  options: string[];
-  category: 'logical' | 'creative' | 'social' | 'practical';
-}
+export default function TestScreen() {
+  const [selectedTest, setSelectedTest] = useState<number | null>(null);
 
-const questions: Question[] = [
-  {
-    id: 1,
-    question: "¿Qué actividad te resulta más atractiva?",
-    options: [
-      "Resolver problemas matemáticos complejos",
-      "Crear contenido artístico o visual",
-      "Ayudar a personas con sus problemas",
-      "Construir o reparar objetos"
-    ],
-    category: 'logical'
-  },
-  {
-    id: 2,
-    question: "En tu tiempo libre prefieres:",
-    options: [
-      "Leer sobre ciencia y tecnología",
-      "Escuchar música o dibujar",
-      "Participar en actividades grupales",
-      "Hacer proyectos DIY (hazlo tú mismo)"
-    ],
-    category: 'creative'
-  },
-  {
-    id: 3,
-    question: "¿Cuál de estas habilidades consideras tu fortaleza?",
-    options: [
-      "Análisis y pensamiento crítico",
-      "Creatividad e imaginación",
-      "Comunicación y empatía",
-      "Habilidades manuales y técnicas"
-    ],
-    category: 'social'
-  },
-  {
-    id: 4,
-    question: "¿En qué tipo de ambiente te sientes más cómodo trabajando?",
-    options: [
-      "Laboratorio o oficina con datos",
-      "Estudio creativo o espacio artístico",
-      "Interactuando con personas",
-      "Taller o campo de trabajo"
-    ],
-    category: 'practical'
-  },
-  {
-    id: 5,
-    question: "¿Qué te motiva más en un trabajo?",
-    options: [
-      "Resolver desafíos intelectuales",
-      "Expresar ideas originales",
-      "Impactar positivamente en otros",
-      "Ver resultados tangibles"
-    ],
-    category: 'logical'
-  }
-];
+  const tests = [
+    {
+      id: 1,
+      title: 'Test de Personalidad',
+      description: 'Descubre tu tipo de personalidad y carreras afines',
+      duration: '15 min',
+      questions: 60,
+      color: '#E0E7FF',
+      iconColor: '#6366F1',
+      completed: false,
+    },
+    {
+      id: 2,
+      title: 'Test de Intereses',
+      description: 'Identifica tus áreas de interés profesional',
+      duration: '10 min',
+      questions: 40,
+      color: '#DBEAFE',
+      iconColor: '#3B82F6',
+      completed: true,
+    },
+    {
+      id: 3,
+      title: 'Test de Habilidades',
+      description: 'Evalúa tus fortalezas y competencias',
+      duration: '20 min',
+      questions: 80,
+      color: '#D1FAE5',
+      iconColor: '#10B981',
+      completed: false,
+    },
+  ];
 
-const careerSuggestions = {
-  logical: {
-    careers: ["Ingeniería de Software", "Medicina", "Investigación Científica", "Análisis de Datos"],
-    description: "Tu perfil muestra fortalezas en el pensamiento lógico y analítico."
-  },
-  creative: {
-    careers: ["Diseño Gráfico", "Arquitectura", "Marketing Creativo", "Producción Audiovisual"],
-    description: "Tienes un perfil creativo con gran capacidad de innovación."
-  },
-  social: {
-    careers: ["Psicología", "Trabajo Social", "Recursos Humanos", "Educación"],
-    description: "Tu perfil se orienta hacia el trabajo con personas y el impacto social."
-  },
-  practical: {
-    careers: ["Ingeniería Civil", "Técnico Especializado", "Gestión de Proyectos", "Emprendimiento"],
-    description: "Tienes habilidades prácticas y orientación hacia resultados concretos."
-  }
-};
-
-export default function VocationalTestScreen() {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<number[]>([]);
-  const [showResults, setShowResults] = useState(false);
-  const [results, setResults] = useState<any>(null);
-
-  const handleAnswer = (optionIndex: number) => {
-    const newAnswers = [...answers, optionIndex];
-    setAnswers(newAnswers);
-
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-    } else {
-      calculateResults(newAnswers);
-    }
-  };
-
-  const calculateResults = (finalAnswers: number[]) => {
-    const scores = {
-      logical: 0,
-      creative: 0,
-      social: 0,
-      practical: 0
-    };
-
-    finalAnswers.forEach((answer, index) => {
-      switch (answer) {
-        case 0:
-          scores.logical++;
-          break;
-        case 1:
-          scores.creative++;
-          break;
-        case 2:
-          scores.social++;
-          break;
-        case 3:
-          scores.practical++;
-          break;
-      }
-    });
-
-    const dominantType = Object.entries(scores).reduce((a, b) => 
-      scores[a[0] as keyof typeof scores] > scores[b[0] as keyof typeof scores] ? a : b
-    )[0] as keyof typeof scores;
-
-    setResults({
-      dominantType,
-      scores,
-      suggestion: careerSuggestions[dominantType]
-    });
-    setShowResults(true);
-  };
-
-  const resetTest = () => {
-    setCurrentQuestion(0);
-    setAnswers([]);
-    setShowResults(false);
-    setResults(null);
-  };
-
-  if (showResults && results) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <ScrollView style={styles.scrollView}>
-          <View style={styles.resultsContainer}>
-            <View style={styles.resultsHeader}>
-              <Brain size={32} color="#4f46e5" />
-              <Text style={styles.resultsTitle}>¡Resultados de tu Test!</Text>
-            </View>
-
-            <View style={styles.profileCard}>
-              <Text style={styles.profileTitle}>Tu Perfil Vocacional</Text>
-              <Text style={styles.profileDescription}>
-                {results.suggestion.description}
-              </Text>
-            </View>
-
-            <View style={styles.scoresContainer}>
-              <Text style={styles.scoresTitle}>Puntuaciones por Área</Text>
-              {Object.entries(results.scores).map(([type, score]) => (
-                <View key={type} style={styles.scoreItem}>
-                  <Text style={styles.scoreLabel}>
-                    {type === 'logical' ? 'Lógico-Analítico' :
-                     type === 'creative' ? 'Creativo-Artístico' :
-                     type === 'social' ? 'Social-Humanístico' :
-                     'Práctico-Técnico'}
-                  </Text>
-                  <View style={styles.scoreBar}>
-                    <View 
-                      style={[
-                        styles.scoreProgress, 
-                        { 
-                          width: `${(score as number / questions.length) * 100}%`,
-                          backgroundColor: type === results.dominantType ? '#4f46e5' : '#d1d5db'
-                        }
-                      ]} 
-                    />
-                  </View>
-                  <Text style={styles.scoreNumber}>{score}/{questions.length}</Text>
-                </View>
-              ))}
-            </View>
-
-            <View style={styles.careersContainer}>
-              <Text style={styles.careersTitle}>Carreras Recomendadas</Text>
-              {results.suggestion.careers.map((career: string, index: number) => (
-                <View key={index} style={styles.careerItem}>
-                  <ChevronRight size={16} color="#4f46e5" />
-                  <Text style={styles.careerText}>{career}</Text>
-                </View>
-              ))}
-            </View>
-
-            <TouchableOpacity style={styles.resetButton} onPress={resetTest}>
-              <RotateCcw size={20} color="#white" />
-              <Text style={styles.resetButtonText}>Realizar Test Nuevamente</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    );
-  }
+  const emotions = [
+    { emoji: '😊', label: 'Motivado', selected: false },
+    { emoji: '🤔', label: 'Curioso', selected: true },
+    { emoji: '😌', label: 'Tranquilo', selected: false },
+    { emoji: '😟', label: 'Ansioso', selected: false },
+    { emoji: '😴', label: 'Cansado', selected: false },
+  ];
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Test Vocacional</Text>
-        <Text style={styles.progress}>
-          Pregunta {currentQuestion + 1} de {questions.length}
-        </Text>
-      </View>
-
-      <View style={styles.progressBar}>
-        <View 
-          style={[
-            styles.progressFill, 
-            { width: `${((currentQuestion + 1) / questions.length) * 100}%` }
-          ]} 
-        />
-      </View>
-
-      <ScrollView style={styles.questionContainer}>
-        <View style={styles.questionCard}>
-          <Text style={styles.questionNumber}>
-            Pregunta {currentQuestion + 1}
-          </Text>
-          <Text style={styles.questionText}>
-            {questions[currentQuestion].question}
-          </Text>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Tests Vocacionales</Text>
+          <Text style={styles.subtitle}>Descubre tu camino profesional ideal</Text>
         </View>
 
-        <View style={styles.optionsContainer}>
-          {questions[currentQuestion].options.map((option, index) => (
+        {/* Mood Check */}
+        <View style={styles.moodSection}>
+          <Text style={styles.sectionTitle}>¿Cómo te sientes antes de empezar?</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.emotionsContainer}>
+            {emotions.map((emotion, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.emotionChip,
+                  emotion.selected && styles.emotionChipSelected
+                ]}
+              >
+                <Text style={styles.emotionEmoji}>{emotion.emoji}</Text>
+                <Text style={[
+                  styles.emotionLabel,
+                  emotion.selected && styles.emotionLabelSelected
+                ]}>
+                  {emotion.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Progress Overview */}
+        <View style={styles.progressSection}>
+          <Text style={styles.sectionTitle}>Tu Progreso</Text>
+          <View style={styles.progressCard}>
+            <View style={styles.progressStats}>
+              <View style={styles.progressStat}>
+                <Text style={styles.progressNumber}>1</Text>
+                <Text style={styles.progressLabel}>Completado</Text>
+              </View>
+              <View style={styles.progressStat}>
+                <Text style={styles.progressNumber}>2</Text>
+                <Text style={styles.progressLabel}>Pendientes</Text>
+              </View>
+              <View style={styles.progressStat}>
+                <Text style={styles.progressNumber}>85%</Text>
+                <Text style={styles.progressLabel}>Compatibilidad</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Available Tests */}
+        <View style={styles.testsSection}>
+          <Text style={styles.sectionTitle}>Tests Disponibles</Text>
+          {tests.map((test) => (
             <TouchableOpacity
-              key={index}
-              style={styles.optionButton}
-              onPress={() => handleAnswer(index)}
+              key={test.id}
+              style={[
+                styles.testCard,
+                selectedTest === test.id && styles.testCardSelected
+              ]}
+              onPress={() => setSelectedTest(test.id)}
             >
-              <Text style={styles.optionText}>{option}</Text>
-              <ChevronRight size={20} color="#6b7280" />
+              <View style={styles.testHeader}>
+                <View style={[styles.testIcon, { backgroundColor: test.color }]}>
+                  <Brain size={24} color={test.iconColor} />
+                </View>
+                <View style={styles.testInfo}>
+                  <View style={styles.testTitleRow}>
+                    <Text style={styles.testTitle}>{test.title}</Text>
+                    {test.completed && (
+                      <View style={styles.completedBadge}>
+                        <Star size={12} color="#F59E0B" fill="#F59E0B" />
+                      </View>
+                    )}
+                  </View>
+                  <Text style={styles.testDescription}>{test.description}</Text>
+                </View>
+              </View>
+              
+              <View style={styles.testMeta}>
+                <View style={styles.testMetaItem}>
+                  <Clock size={16} color="#6B7280" />
+                  <Text style={styles.testMetaText}>{test.duration}</Text>
+                </View>
+                <View style={styles.testMetaItem}>
+                  <Users size={16} color="#6B7280" />
+                  <Text style={styles.testMetaText}>{test.questions} preguntas</Text>
+                </View>
+              </View>
+
+              {selectedTest === test.id && (
+                <TouchableOpacity style={styles.startButton}>
+                  <Text style={styles.startButtonText}>
+                    {test.completed ? 'Ver Resultados' : 'Comenzar Test'}
+                  </Text>
+                  <ArrowRight size={20} color="#FFFFFF" />
+                </TouchableOpacity>
+              )}
             </TouchableOpacity>
           ))}
+        </View>
+
+        {/* Tips Section */}
+        <View style={styles.tipsSection}>
+          <Text style={styles.sectionTitle}>Consejos para el Test</Text>
+          <View style={styles.tipCard}>
+            <Text style={styles.tipTitle}>💡 Responde con honestidad</Text>
+            <Text style={styles.tipText}>
+              No hay respuestas correctas o incorrectas. Sé auténtico contigo mismo.
+            </Text>
+          </View>
+          <View style={styles.tipCard}>
+            <Text style={styles.tipTitle}>⏰ Tómate tu tiempo</Text>
+            <Text style={styles.tipText}>
+              Reflexiona sobre cada pregunta, pero no te obsesiones con la respuesta perfecta.
+            </Text>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -259,204 +177,202 @@ export default function VocationalTestScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
-  },
-  scrollView: {
-    flex: 1,
+    backgroundColor: '#F9FAFB',
   },
   header: {
-    padding: 24,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 24,
   },
   title: {
-    fontSize: 24,
-    fontFamily: 'Inter_600SemiBold',
-    color: '#1f2937',
-    marginBottom: 4,
-  },
-  progress: {
-    fontSize: 14,
-    fontFamily: 'Inter_400Regular',
-    color: '#6b7280',
-  },
-  progressBar: {
-    height: 4,
-    backgroundColor: '#e5e7eb',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#4f46e5',
-  },
-  questionContainer: {
-    flex: 1,
-    padding: 24,
-  },
-  questionCard: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  questionNumber: {
-    fontSize: 14,
-    fontFamily: 'Inter_500Medium',
-    color: '#4f46e5',
+    fontSize: 28,
+    fontFamily: 'Inter-Bold',
+    color: '#1F2937',
     marginBottom: 8,
   },
-  questionText: {
-    fontSize: 18,
-    fontFamily: 'Inter_600SemiBold',
-    color: '#1f2937',
-    lineHeight: 26,
-  },
-  optionsContainer: {
-    gap: 12,
-  },
-  optionButton: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  optionText: {
+  subtitle: {
     fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-    color: '#374151',
-    flex: 1,
+    fontFamily: 'Inter-Regular',
+    color: '#6B7280',
+  },
+  moodSection: {
+    paddingHorizontal: 20,
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontFamily: 'Inter-SemiBold',
+    color: '#1F2937',
+    marginBottom: 16,
+  },
+  emotionsContainer: {
+    flexDirection: 'row',
+  },
+  emotionChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     marginRight: 12,
+    borderWidth: 2,
+    borderColor: 'transparent',
   },
-  resultsContainer: {
-    flex: 1,
-    padding: 24,
+  emotionChipSelected: {
+    borderColor: '#6366F1',
+    backgroundColor: '#E0E7FF',
   },
-  resultsHeader: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  resultsTitle: {
-    fontSize: 24,
-    fontFamily: 'Inter_600SemiBold',
-    color: '#1f2937',
-    marginTop: 12,
-    textAlign: 'center',
-  },
-  profileCard: {
-    backgroundColor: '#eff6ff',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#bfdbfe',
-  },
-  profileTitle: {
-    fontSize: 18,
-    fontFamily: 'Inter_600SemiBold',
-    color: '#1e40af',
-    marginBottom: 8,
-  },
-  profileDescription: {
+  emotionEmoji: {
     fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-    color: '#1e40af',
-    lineHeight: 24,
+    marginRight: 6,
   },
-  scoresContainer: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  scoresTitle: {
-    fontSize: 18,
-    fontFamily: 'Inter_600SemiBold',
-    color: '#1f2937',
-    marginBottom: 16,
-  },
-  scoreItem: {
-    marginBottom: 16,
-  },
-  scoreLabel: {
+  emotionLabel: {
     fontSize: 14,
-    fontFamily: 'Inter_500Medium',
-    color: '#374151',
-    marginBottom: 8,
+    fontFamily: 'Inter-Medium',
+    color: '#6B7280',
   },
-  scoreBar: {
-    height: 8,
-    backgroundColor: '#f3f4f6',
-    borderRadius: 4,
-    overflow: 'hidden',
-    marginBottom: 4,
+  emotionLabelSelected: {
+    color: '#6366F1',
   },
-  scoreProgress: {
-    height: '100%',
-    borderRadius: 4,
+  progressSection: {
+    paddingHorizontal: 20,
+    marginBottom: 24,
   },
-  scoreNumber: {
-    fontSize: 12,
-    fontFamily: 'Inter_400Regular',
-    color: '#6b7280',
-    textAlign: 'right',
-  },
-  careersContainer: {
-    backgroundColor: 'white',
+  progressCard: {
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
-    marginBottom: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
   },
-  careersTitle: {
-    fontSize: 18,
-    fontFamily: 'Inter_600SemiBold',
-    color: '#1f2937',
+  progressStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  progressStat: {
+    alignItems: 'center',
+  },
+  progressNumber: {
+    fontSize: 24,
+    fontFamily: 'Inter-Bold',
+    color: '#1F2937',
+  },
+  progressLabel: {
+    fontSize: 12,
+    fontFamily: 'Inter-Regular',
+    color: '#6B7280',
+    marginTop: 4,
+  },
+  testsSection: {
+    paddingHorizontal: 20,
+    marginBottom: 24,
+  },
+  testCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  testCardSelected: {
+    borderColor: '#6366F1',
+  },
+  testHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     marginBottom: 16,
   },
-  careerItem: {
+  testIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  testInfo: {
+    flex: 1,
+  },
+  testTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 4,
   },
-  careerText: {
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-    color: '#374151',
+  testTitle: {
+    fontSize: 18,
+    fontFamily: 'Inter-SemiBold',
+    color: '#1F2937',
+    flex: 1,
+  },
+  completedBadge: {
     marginLeft: 8,
   },
-  resetButton: {
-    backgroundColor: '#4f46e5',
+  testDescription: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#6B7280',
+    lineHeight: 20,
+  },
+  testMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  testMetaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  testMetaText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#6B7280',
+    marginLeft: 6,
+  },
+  startButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#6366F1',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  startButtonText: {
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+    color: '#FFFFFF',
+    marginRight: 8,
+  },
+  tipsSection: {
+    paddingHorizontal: 20,
+    marginBottom: 24,
+  },
+  tipCard: {
+    backgroundColor: '#F0F9FF',
     borderRadius: 12,
     padding: 16,
+    marginBottom: 12,
   },
-  resetButtonText: {
+  tipTitle: {
     fontSize: 16,
-    fontFamily: 'Inter_600SemiBold',
-    color: 'white',
-    marginLeft: 8,
+    fontFamily: 'Inter-SemiBold',
+    color: '#0C4A6E',
+    marginBottom: 8,
+  },
+  tipText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#0C4A6E',
+    lineHeight: 20,
   },
 });

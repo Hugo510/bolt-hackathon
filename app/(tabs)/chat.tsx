@@ -1,281 +1,225 @@
-import { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Send, Bot, User, Heart, BarChart3, Plus } from 'lucide-react-native';
-import { useEmotionalLogs, useEmotionalInsights } from '@/hooks/useEmotionalLogs';
-import { useUserProgressStore } from '@/stores/userProgressStore';
-import EmotionalLogForm from '@/components/forms/EmotionalLogForm';
-import dayjs from 'dayjs';
+import { Send, Bot, Heart, Smile, Frown, Meh, Plus } from 'lucide-react-native';
+import { useState, useRef, useEffect } from 'react';
 
 interface Message {
   id: string;
-  content: string;
+  text: string;
   isUser: boolean;
   timestamp: Date;
   emotion?: string;
 }
 
-const emotionalResponses = {
-  stress: [
-    "Entiendo que te sientes estresado/a. Es normal sentir presión cuando pensamos en nuestro futuro profesional.",
-    "El estrés puede ser abrumador, pero recuerda que cada paso que das te acerca más a tus objetivos.",
-    "Respira profundo. El estrés es temporal, pero tus capacidades y potencial son permanentes."
-  ],
-  confused: [
-    "Es completamente normal sentirse confundido/a sobre el futuro. La incertidumbre es parte del crecimiento.",
-    "No tener todas las respuestas ahora está bien. Cada experiencia te ayuda a descubrir más sobre ti.",
-    "La confusión a menudo precede a la claridad. Estás en el camino correcto al buscar orientación."
-  ],
-  motivated: [
-    "¡Me encanta escuchar tu motivación! Esa energía positiva te llevará lejos.",
-    "Tu entusiasmo es contagioso. Canaliza esa motivación hacia acciones concretas.",
-    "Con esa actitud positiva, estoy seguro/a de que alcanzarás tus metas profesionales."
-  ],
-  anxious: [
-    "La ansiedad por el futuro es muy común. Recuerda que no tienes que tenerlo todo resuelto ahora.",
-    "Toma las cosas paso a paso. Cada pequeño progreso cuenta hacia tu objetivo mayor.",
-    "Tu ansiedad muestra que te importa tu futuro, y eso es algo positivo. Úsala como motivación."
-  ],
-  default: [
-    "Gracias por compartir conmigo. Estoy aquí para apoyarte en tu journey profesional.",
-    "Cada conversación es una oportunidad de crecimiento. ¿Cómo puedo ayudarte mejor?",
-    "Tu bienestar emocional es importante para tu desarrollo profesional. Sigamos hablando."
-  ]
-};
-
-const detectEmotion = (text: string): string => {
-  const lowerText = text.toLowerCase();
-  
-  if (lowerText.includes('estres') || lowerText.includes('presión') || lowerText.includes('agobio')) {
-    return 'stress';
-  }
-  if (lowerText.includes('confund') || lowerText.includes('perdid') || lowerText.includes('no sé')) {
-    return 'confused';
-  }
-  if (lowerText.includes('motivad') || lowerText.includes('emocionad') || lowerText.includes('bien') || lowerText.includes('genial')) {
-    return 'motivated';
-  }
-  if (lowerText.includes('ansied') || lowerText.includes('nervios') || lowerText.includes('preocup') || lowerText.includes('miedo')) {
-    return 'anxious';
-  }
-  
-  return 'default';
-};
-
-const getEmotionalResponse = (emotion: string): string => {
-  const responses = emotionalResponses[emotion as keyof typeof emotionalResponses] || emotionalResponses.default;
-  return responses[Math.floor(Math.random() * responses.length)];
-};
-
 export default function ChatScreen() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: '¡Hola! Soy tu asistente de apoyo emocional. Estoy aquí para ayudarte con cualquier inquietud sobre tu futuro profesional. ¿Cómo te sientes hoy?',
+      text: '¡Hola! Soy tu asistente de apoyo emocional. Estoy aquí para escucharte y ayudarte. ¿Cómo te sientes hoy?',
       isUser: false,
       timestamp: new Date(),
     }
   ]);
   const [inputText, setInputText] = useState('');
-  const [showLogForm, setShowLogForm] = useState(false);
+  const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
-  const { data: emotionalLogs } = useEmotionalLogs(5);
-  const { data: insights } = useEmotionalInsights();
-  const { incrementCommentsMade } = useUserProgressStore();
+
+  const moods = [
+    { emoji: '😊', label: 'Feliz', color: '#10B981' },
+    { emoji: '😌', label: 'Tranquilo', color: '#3B82F6' },
+    { emoji: '🤔', label: 'Pensativo', color: '#8B5CF6' },
+    { emoji: '😟', label: 'Preocupado', color: '#F59E0B' },
+    { emoji: '😢', label: 'Triste', color: '#EF4444' },
+  ];
+
+  const quickResponses = [
+    'Me siento ansioso por mi futuro',
+    'No sé qué carrera elegir',
+    'Tengo miedo de equivocarme',
+    'Me siento perdido',
+  ];
 
   useEffect(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
 
-  const handleSend = () => {
-    if (!inputText.trim()) return;
+  const sendMessage = (text: string) => {
+    if (!text.trim()) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      content: inputText,
+      text: text.trim(),
       isUser: true,
       timestamp: new Date(),
+      emotion: selectedMood || undefined,
     };
 
     setMessages(prev => [...prev, userMessage]);
-    incrementCommentsMade();
+    setInputText('');
+    setSelectedMood(null);
 
-    // Simulate AI response with emotion detection
+    // Simulate AI response
     setTimeout(() => {
-      const emotion = detectEmotion(inputText);
-      const response = getEmotionalResponse(emotion);
-      
+      const responses = [
+        'Entiendo cómo te sientes. Es completamente normal tener estas emociones cuando pensamos en nuestro futuro.',
+        'Gracias por compartir esto conmigo. ¿Podrías contarme un poco más sobre lo que te preocupa específicamente?',
+        'Es valioso que reconozcas estos sentimientos. ¿Qué crees que te ayudaría a sentirte mejor en este momento?',
+        'Tus emociones son válidas. Recuerda que no tienes que tener todo resuelto ahora mismo.',
+      ];
+
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: response,
+        text: responses[Math.floor(Math.random() * responses.length)],
         isUser: false,
         timestamp: new Date(),
-        emotion,
       };
 
       setMessages(prev => [...prev, aiMessage]);
     }, 1000);
-
-    setInputText('');
   };
 
-  const MessageBubble = ({ message }: { message: Message }) => (
-    <View style={[
-      styles.messageBubble,
-      message.isUser ? styles.userMessage : styles.aiMessage
-    ]}>
-      <View style={styles.messageHeader}>
-        {message.isUser ? (
-          <User size={16} color="#4f46e5" />
-        ) : (
-          <Bot size={16} color="#10b981" />
-        )}
-        <Text style={styles.messageTime}>
-          {dayjs(message.timestamp).format('HH:mm')}
-        </Text>
-      </View>
-      <Text style={[
-        styles.messageText,
-        message.isUser ? styles.userMessageText : styles.aiMessageText
-      ]}>
-        {message.content}
-      </Text>
-      {message.emotion && message.emotion !== 'default' && (
-        <View style={styles.emotionTag}>
-          <Text style={styles.emotionText}>
-            {message.emotion === 'stress' ? '😰 Estrés detectado' :
-             message.emotion === 'confused' ? '🤔 Confusión detectada' :
-             message.emotion === 'motivated' ? '🚀 Motivación detectada' :
-             message.emotion === 'anxious' ? '😟 Ansiedad detectada' : ''}
-          </Text>
-        </View>
-      )}
-    </View>
-  );
-
-  const InsightsCard = () => {
-    if (!insights) return null;
-
-    return (
-      <View style={styles.insightsCard}>
-        <View style={styles.insightsHeader}>
-          <BarChart3 size={20} color="#4f46e5" />
-          <Text style={styles.insightsTitle}>Resumen Emocional (30 días)</Text>
-        </View>
-        <View style={styles.insightsGrid}>
-          <View style={styles.insightItem}>
-            <Text style={styles.insightValue}>{insights.totalSessions}</Text>
-            <Text style={styles.insightLabel}>Sesiones</Text>
-          </View>
-          <View style={styles.insightItem}>
-            <Text style={styles.insightValue}>{insights.averageIntensity}</Text>
-            <Text style={styles.insightLabel}>Intensidad Promedio</Text>
-          </View>
-          <View style={styles.insightItem}>
-            <Text style={styles.insightValue}>{insights.moodImprovementRate}%</Text>
-            <Text style={styles.insightLabel}>Mejora de Ánimo</Text>
-          </View>
-        </View>
-        {insights.topEmotions.length > 0 && (
-          <View style={styles.topEmotions}>
-            <Text style={styles.topEmotionsTitle}>Emociones más frecuentes:</Text>
-            {insights.topEmotions.map((emotion, index) => (
-              <Text key={index} style={styles.topEmotionItem}>
-                • {emotion.emotion} ({emotion.count} veces)
-              </Text>
-            ))}
-          </View>
-        )}
-      </View>
-    );
+  const selectQuickResponse = (response: string) => {
+    sendMessage(response);
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <Bot size={24} color="#10b981" />
-          <View style={styles.headerText}>
-            <Text style={styles.title}>Apoyo Emocional</Text>
-            <Text style={styles.subtitle}>Asistente de IA especializada</Text>
-          </View>
-        </View>
-        <View style={styles.headerActions}>
-          <TouchableOpacity 
-            style={styles.logButton}
-            onPress={() => setShowLogForm(true)}
-          >
-            <Plus size={20} color="#4f46e5" />
-          </TouchableOpacity>
-          <View style={styles.statusIndicator}>
-            <View style={styles.onlineStatus} />
-            <Text style={styles.statusText}>En línea</Text>
-          </View>
-        </View>
-      </View>
-
       <KeyboardAvoidingView 
-        style={styles.chatContainer}
+        style={styles.container} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView
-          ref={scrollViewRef}
-          style={styles.messagesContainer}
-          contentContainerStyle={styles.messagesContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <InsightsCard />
-          
-          {messages.map((message) => (
-            <MessageBubble key={message.id} message={message} />
-          ))}
-        </ScrollView>
-
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.textInput}
-            value={inputText}
-            onChangeText={setInputText}
-            placeholder="Escribe tu mensaje..."
-            multiline
-            maxLength={500}
-            onSubmitEditing={handleSend}
-          />
-          <TouchableOpacity
-            style={[
-              styles.sendButton,
-              !inputText.trim() && styles.sendButtonDisabled
-            ]}
-            onPress={handleSend}
-            disabled={!inputText.trim()}
-          >
-            <Send size={20} color={inputText.trim() ? 'white' : '#9ca3af'} />
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
+            <View style={styles.botIcon}>
+              <Bot size={24} color="#6366F1" />
+            </View>
+            <View>
+              <Text style={styles.headerTitle}>Apoyo Emocional</Text>
+              <Text style={styles.headerSubtitle}>Asistente IA • En línea</Text>
+            </View>
+          </View>
+          <TouchableOpacity style={styles.moodButton}>
+            <Heart size={20} color="#EF4444" />
           </TouchableOpacity>
         </View>
-      </KeyboardAvoidingView>
 
-      <View style={styles.disclaimer}>
-        <Text style={styles.disclaimerText}>
-          💡 Este es un chatbot de apoyo emocional. Para emergencias, contacta servicios profesionales.
-        </Text>
-      </View>
+        {/* Mood Selector */}
+        <View style={styles.moodSection}>
+          <Text style={styles.moodTitle}>¿Cómo te sientes?</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.moodContainer}>
+            {moods.map((mood, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.moodChip,
+                  selectedMood === mood.label && { backgroundColor: mood.color + '20', borderColor: mood.color }
+                ]}
+                onPress={() => setSelectedMood(selectedMood === mood.label ? null : mood.label)}
+              >
+                <Text style={styles.moodEmoji}>{mood.emoji}</Text>
+                <Text style={[
+                  styles.moodLabel,
+                  selectedMood === mood.label && { color: mood.color }
+                ]}>
+                  {mood.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
 
-      <Modal
-        visible={showLogForm}
-        animationType="slide"
-        presentationStyle="pageSheet"
-      >
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => setShowLogForm(false)}>
-              <Text style={styles.modalCloseButton}>Cancelar</Text>
+        {/* Messages */}
+        <ScrollView 
+          ref={scrollViewRef}
+          style={styles.messagesContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          {messages.map((message) => (
+            <View
+              key={message.id}
+              style={[
+                styles.messageContainer,
+                message.isUser ? styles.userMessageContainer : styles.aiMessageContainer
+              ]}
+            >
+              {!message.isUser && (
+                <View style={styles.aiAvatar}>
+                  <Bot size={16} color="#6366F1" />
+                </View>
+              )}
+              <View
+                style={[
+                  styles.messageBubble,
+                  message.isUser ? styles.userMessage : styles.aiMessage
+                ]}
+              >
+                <Text style={[
+                  styles.messageText,
+                  message.isUser ? styles.userMessageText : styles.aiMessageText
+                ]}>
+                  {message.text}
+                </Text>
+                {message.emotion && (
+                  <View style={styles.emotionTag}>
+                    <Text style={styles.emotionTagText}>
+                      {moods.find(m => m.label === message.emotion)?.emoji} {message.emotion}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          ))}
+
+          {/* Quick Responses */}
+          {messages.length === 1 && (
+            <View style={styles.quickResponsesContainer}>
+              <Text style={styles.quickResponsesTitle}>Respuestas rápidas:</Text>
+              {quickResponses.map((response, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.quickResponseButton}
+                  onPress={() => selectQuickResponse(response)}
+                >
+                  <Text style={styles.quickResponseText}>{response}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </ScrollView>
+
+        {/* Input */}
+        <View style={styles.inputContainer}>
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={styles.textInput}
+              value={inputText}
+              onChangeText={setInputText}
+              placeholder="Escribe tu mensaje..."
+              placeholderTextColor="#9CA3AF"
+              multiline
+              maxLength={500}
+            />
+            <TouchableOpacity
+              style={[
+                styles.sendButton,
+                inputText.trim() ? styles.sendButtonActive : styles.sendButtonInactive
+              ]}
+              onPress={() => sendMessage(inputText)}
+              disabled={!inputText.trim()}
+            >
+              <Send size={20} color={inputText.trim() ? "#FFFFFF" : "#9CA3AF"} />
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>Registro Emocional</Text>
-            <View style={styles.modalSpacer} />
           </View>
-          <EmotionalLogForm onSuccess={() => setShowLogForm(false)} />
-        </SafeAreaView>
-      </Modal>
+        </View>
+
+        {/* Disclaimer */}
+        <View style={styles.disclaimer}>
+          <Text style={styles.disclaimerText}>
+            💡 Este es un chatbot de apoyo emocional. Para emergencias, contacta servicios profesionales.
+          </Text>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -283,247 +227,225 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#F9FAFB',
   },
   header: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
   },
   headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
   },
-  headerText: {
-    marginLeft: 12,
-  },
-  title: {
-    fontSize: 18,
-    fontFamily: 'Inter_600SemiBold',
-    color: '#1f2937',
-  },
-  subtitle: {
-    fontSize: 14,
-    fontFamily: 'Inter_400Regular',
-    color: '#6b7280',
-  },
-  headerActions: {
-    flexDirection: 'row',
+  botIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#E0E7FF',
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 12,
+    marginRight: 12,
   },
-  logButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#eff6ff',
+  headerTitle: {
+    fontSize: 18,
+    fontFamily: 'Inter-SemiBold',
+    color: '#1F2937',
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#6B7280',
+  },
+  moodButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FEE2E2',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  statusIndicator: {
+  moodSection: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  moodTitle: {
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+    color: '#1F2937',
+    marginBottom: 12,
+  },
+  moodContainer: {
+    flexDirection: 'row',
+  },
+  moodChip: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
-  onlineStatus: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#10b981',
+  moodEmoji: {
+    fontSize: 16,
     marginRight: 6,
   },
-  statusText: {
-    fontSize: 12,
-    fontFamily: 'Inter_400Regular',
-    color: '#10b981',
-  },
-  chatContainer: {
-    flex: 1,
+  moodLabel: {
+    fontSize: 14,
+    fontFamily: 'Inter-Medium',
+    color: '#6B7280',
   },
   messagesContainer: {
     flex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
   },
-  messagesContent: {
-    padding: 20,
-    paddingBottom: 10,
+  messageContainer: {
+    flexDirection: 'row',
+    marginBottom: 16,
   },
-  insightsCard: {
-    backgroundColor: '#eff6ff',
+  userMessageContainer: {
+    justifyContent: 'flex-end',
+  },
+  aiMessageContainer: {
+    justifyContent: 'flex-start',
+  },
+  aiAvatar: {
+    width: 32,
+    height: 32,
     borderRadius: 16,
-    padding: 16,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#bfdbfe',
-  },
-  insightsHeader: {
-    flexDirection: 'row',
+    backgroundColor: '#E0E7FF',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
-  },
-  insightsTitle: {
-    fontSize: 16,
-    fontFamily: 'Inter_600SemiBold',
-    color: '#1e40af',
-    marginLeft: 8,
-  },
-  insightsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 12,
-  },
-  insightItem: {
-    alignItems: 'center',
-  },
-  insightValue: {
-    fontSize: 20,
-    fontFamily: 'Inter_600SemiBold',
-    color: '#1e40af',
-  },
-  insightLabel: {
-    fontSize: 12,
-    fontFamily: 'Inter_400Regular',
-    color: '#1e40af',
-    textAlign: 'center',
-  },
-  topEmotions: {
-    borderTopWidth: 1,
-    borderTopColor: '#bfdbfe',
-    paddingTop: 12,
-  },
-  topEmotionsTitle: {
-    fontSize: 14,
-    fontFamily: 'Inter_500Medium',
-    color: '#1e40af',
-    marginBottom: 4,
-  },
-  topEmotionItem: {
-    fontSize: 12,
-    fontFamily: 'Inter_400Regular',
-    color: '#1e40af',
-    marginBottom: 2,
+    marginRight: 12,
+    marginTop: 4,
   },
   messageBubble: {
     maxWidth: '80%',
-    marginBottom: 16,
     borderRadius: 16,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   userMessage: {
-    alignSelf: 'flex-end',
-    backgroundColor: '#4f46e5',
+    backgroundColor: '#6366F1',
+    borderBottomRightRadius: 4,
   },
   aiMessage: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  messageHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  messageTime: {
-    fontSize: 12,
-    fontFamily: 'Inter_400Regular',
-    color: '#9ca3af',
-    marginLeft: 8,
+    backgroundColor: '#FFFFFF',
+    borderBottomLeftRadius: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
   },
   messageText: {
     fontSize: 16,
-    fontFamily: 'Inter_400Regular',
-    lineHeight: 24,
+    fontFamily: 'Inter-Regular',
+    lineHeight: 22,
   },
   userMessageText: {
-    color: 'white',
+    color: '#FFFFFF',
   },
   aiMessageText: {
-    color: '#374151',
+    color: '#1F2937',
   },
   emotionTag: {
-    backgroundColor: '#fef3c7',
+    backgroundColor: '#FEF3C7',
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 4,
     marginTop: 8,
     alignSelf: 'flex-start',
   },
-  emotionText: {
+  emotionTagText: {
     fontSize: 12,
-    fontFamily: 'Inter_500Medium',
-    color: '#92400e',
+    fontFamily: 'Inter-Medium',
+    color: '#92400E',
+  },
+  quickResponsesContainer: {
+    marginTop: 16,
+    marginBottom: 20,
+  },
+  quickResponsesTitle: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: '#6B7280',
+    marginBottom: 12,
+  },
+  quickResponseButton: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  quickResponseText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#374151',
   },
   inputContainer: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  inputWrapper: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    padding: 20,
-    backgroundColor: 'white',
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
+    backgroundColor: '#F9FAFB',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   textInput: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
     fontSize: 16,
-    fontFamily: 'Inter_400Regular',
+    fontFamily: 'Inter-Regular',
+    color: '#1F2937',
     maxHeight: 100,
-    marginRight: 12,
+    paddingVertical: 8,
   },
   sendButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#4f46e5',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
+    marginLeft: 8,
   },
-  sendButtonDisabled: {
-    backgroundColor: '#f3f4f6',
+  sendButtonActive: {
+    backgroundColor: '#6366F1',
+  },
+  sendButtonInactive: {
+    backgroundColor: '#F3F4F6',
   },
   disclaimer: {
-    backgroundColor: '#fef3c7',
-    padding: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#fbbf24',
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
   },
   disclaimerText: {
     fontSize: 12,
-    fontFamily: 'Inter_400Regular',
-    color: '#92400e',
+    fontFamily: 'Inter-Regular',
+    color: '#92400E',
     textAlign: 'center',
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: '#f9fafb',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 20,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  modalCloseButton: {
-    fontSize: 16,
-    fontFamily: 'Inter_500Medium',
-    color: '#6b7280',
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontFamily: 'Inter_600SemiBold',
-    color: '#1f2937',
-  },
-  modalSpacer: {
-    width: 60,
   },
 });
