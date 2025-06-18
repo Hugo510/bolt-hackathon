@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Wifi, WifiOff, Cloud, CloudOff, CheckCircle, AlertCircle } from 'lucide-react-native';
+import { Wifi, WifiOff, Cloud, CloudOff, CircleCheck as CheckCircle, CircleAlert as AlertCircle } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useQueryClient } from '@tanstack/react-query';
 import Animated, {
