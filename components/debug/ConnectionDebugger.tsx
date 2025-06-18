@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { CheckCircle, XCircle, AlertCircle, RefreshCw, Database, Wifi } from 'lucide-react-native';
+import { CircleCheck as CheckCircle, Circle as XCircle, CircleAlert as AlertCircle, RefreshCw, Database, Wifi } from 'lucide-react-native';
 import { useConnectionStatus, useEnvironmentCheck } from '@/hooks/useConnectionStatus';
 import { useTheme } from '@/contexts/ThemeContext';
 
