@@ -94,3 +94,21 @@ export const useUpdateUser = () => {
     },
   });
 };
+
+// Hook para verificar si el usuario es mentor
+export const useIsMentor = () => {
+  const { data: user } = useUser();
+  return user?.is_mentor || false;
+};
+
+// Hook para obtener configuración del usuario
+export const useUserPreferences = () => {
+  const { data: user } = useUser();
+  
+  return {
+    language: user?.preferred_language || 'es',
+    timezone: user?.timezone || 'America/Mexico_City',
+    interests: user?.interests || [],
+    goals: user?.goals || [],
+  };
+};
