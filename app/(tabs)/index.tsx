@@ -23,7 +23,7 @@ export default function HomeScreen() {
   const { isMobile, isTablet, width } = useResponsive();
   const spacing = useResponsiveSpacing();
   const fontSize = useResponsiveFontSize();
-  
+
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
 
   const quickActions = [
@@ -328,17 +328,16 @@ export default function HomeScreen() {
           <FadeInView delay={1600}>
             <View style={responsiveStyles.actionsSection}>
               <Text style={responsiveStyles.sectionTitle}>Acciones Rápidas</Text>
-              <ResponsiveGrid 
+              <ResponsiveGrid
                 columns={{ mobile: 1, tablet: 2, desktop: 3 }}
                 gap={spacing.md}
               >
                 <StaggeredList staggerDelay={150} initialDelay={1800}>
                   {quickActions.map((action) => (
-                    <AnimatedButton
+                    <TouchableOpacity
                       key={action.id}
-                      title=""
                       onPress={() => router.push(action.route as any)}
-                      variant="ghost"
+                      activeOpacity={0.7}
                     >
                       <View style={responsiveStyles.actionCard}>
                         <ScaleInView delay={2000 + action.id * 100}>
@@ -351,7 +350,7 @@ export default function HomeScreen() {
                           <Text style={responsiveStyles.actionSubtitle}>{action.subtitle}</Text>
                         </View>
                       </View>
-                    </AnimatedButton>
+                    </TouchableOpacity>
                   ))}
                 </StaggeredList>
               </ResponsiveGrid>
@@ -367,7 +366,7 @@ export default function HomeScreen() {
                   <Text style={responsiveStyles.inspirationTitle}>Inspiración del día</Text>
                 </View>
               </ScaleInView>
-              
+
               <FadeInView delay={2800}>
                 <Text style={responsiveStyles.inspirationText}>
                   "El futuro pertenece a quienes creen en la belleza de sus sueños."
