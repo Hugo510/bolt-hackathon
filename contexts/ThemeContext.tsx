@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useColorScheme } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -54,9 +55,9 @@ interface ThemeContextType {
     };
   };
   isDark: boolean;
-  toggleTheme: () => void;
+  toggleTheme: () => Promise<void>;
   isHighContrast: boolean;
-  toggleHighContrast: () => void;
+  toggleHighContrast: () => Promise<void>;
 }
 
 const lightColors: Colors = {
@@ -121,8 +122,32 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const systemColorScheme = useColorScheme();
-  const [themeMode, setThemeMode] = useState<Theme>('system');
+  const [themeMode, setThemeMode] = useState<Theme>('light');
   const [isHighContrast, setIsHighContrast] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Cargar tema guardado al iniciar
+  useEffect(() => {
+    const loadTheme = async () => {
+      try {
+        const savedTheme = await AsyncStorage.getItem('theme');
+        const savedHighContrast = await AsyncStorage.getItem('highContrast');
+
+        if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'system')) {
+          setThemeMode(savedTheme as Theme);
+        }
+        if (savedHighContrast) {
+          setIsHighContrast(JSON.parse(savedHighContrast));
+        }
+      } catch (error) {
+        console.error('Error loading theme:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTheme();
+  }, []);
 
   const isDark = themeMode === 'system' ? systemColorScheme === 'dark' : themeMode === 'dark';
 
@@ -169,25 +194,52 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     },
   };
 
-  const toggleTheme = () => {
-    setThemeMode(current => {
-      if (current === 'light') return 'dark';
-      if (current === 'dark') return 'system';
-      return 'light';
-    });
+  const toggleTheme = async () => {
+    console.log('🔴 toggleTheme INICIADO');
+    console.log('🔴 themeMode actual:', themeMode);
+    console.log('🔴 isDark actual:', isDark);
+
+    try {
+      const newTheme: Theme = themeMode === 'dark' ? 'light' : 'dark';
+      console.log('🔴 Calculando nuevo tema:', newTheme);
+
+      console.log('🔴 Ejecutando setThemeMode...');
+      setThemeMode(newTheme);
+
+      console.log('🔴 Guardando en AsyncStorage...');
+      await AsyncStorage.setItem('theme', newTheme);
+
+      console.log('🔴 ✅ Tema cambiado exitosamente a:', newTheme);
+    } catch (error) {
+      console.error('🔴 ❌ Error en toggleTheme:', error);
+      // Revertir el cambio si hay error
+      setThemeMode(themeMode);
+    }
   };
 
-  const toggleHighContrast = () => {
-    setIsHighContrast(prev => !prev);
+  const toggleHighContrast = async () => {
+    try {
+      const newHighContrast = !isHighContrast;
+      setIsHighContrast(newHighContrast);
+      await AsyncStorage.setItem('highContrast', JSON.stringify(newHighContrast));
+    } catch (error) {
+      console.error('Error saving high contrast:', error);
+      setIsHighContrast(isHighContrast);
+    }
   };
+
+  // No renderizar hasta que el tema se haya cargado
+  if (isLoading) {
+    return null;
+  }
 
   return (
-    <ThemeContext.Provider value={{ 
-      theme, 
-      isDark, 
-      toggleTheme, 
-      isHighContrast, 
-      toggleHighContrast 
+    <ThemeContext.Provider value={{
+      theme,
+      isDark,
+      toggleTheme,
+      isHighContrast,
+      toggleHighContrast
     }}>
       {children}
     </ThemeContext.Provider>

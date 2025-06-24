@@ -247,11 +247,14 @@ export default function AuthIndex() {
   );
 
   const handleThemeToggle = () => {
-    try {
-      toggleTheme();
-    } catch (error) {
-      console.error('Error al cambiar tema:', error);
-    }
+    console.log('🔴 BOTÓN PRESIONADO - handleThemeToggle ejecutado');
+    console.log('🔴 Estado actual - isDark:', isDark);
+
+    toggleTheme().then(() => {
+      console.log('🔴 toggleTheme completado');
+    }).catch((error) => {
+      console.error('🔴 Error en toggleTheme:', error);
+    });
   };
 
   const handleMoodPress = (mood: string) => {
@@ -276,19 +279,42 @@ export default function AuthIndex() {
       />
 
       {/* Botón de tema */}
-      <SlideInView delay={100} direction="right" distance={100}>
-        <TouchableOpacity
-          style={responsiveStyles.themeButton}
-          onPress={handleThemeToggle}
-          activeOpacity={0.7}
-        >
-          {isDark ? (
-            <Sun size={isMobile ? 20 : 24} color={theme.colors.accent} />
-          ) : (
-            <Moon size={isMobile ? 20 : 24} color={theme.colors.primary} />
-          )}
-        </TouchableOpacity>
-      </SlideInView>
+      <TouchableOpacity
+        style={[
+          {
+            position: 'absolute',
+            top: isMobile ? 60 : 80,
+            right: spacing.md,
+            width: isMobile ? 44 : 52,
+            height: isMobile ? 44 : 52,
+            borderRadius: isMobile ? 22 : 26,
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+            backgroundColor: theme.colors.surface,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+            shadowColor: theme.colors.shadow,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: isDark ? 0.3 : 0.1,
+            shadowRadius: 8,
+            elevation: 8,
+          }
+        ]}
+        onPress={handleThemeToggle}
+        onPressIn={() => console.log('🔴 onPressIn ejecutado')}
+        onPressOut={() => console.log('🔴 onPressOut ejecutado')}
+        activeOpacity={0.7}
+        accessible={true}
+        accessibilityLabel={isDark ? "Cambiar a tema claro" : "Cambiar a tema oscuro"}
+        accessibilityHint="Toca para alternar entre tema claro y oscuro"
+      >
+        {isDark ? (
+          <Sun size={isMobile ? 20 : 24} color={theme.colors.warning} />
+        ) : (
+          <Moon size={isMobile ? 20 : 24} color={theme.colors.primary} />
+        )}
+      </TouchableOpacity>
 
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView
