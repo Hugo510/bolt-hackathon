@@ -3,6 +3,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Brain, Users, MessageCircle, BookOpen, Star, TrendingUp, Calendar, Award } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useEffect, useState } from 'react';
 import { useResponsive, useResponsiveSpacing, useResponsiveFontSize } from '@/hooks/useResponsive';
 import ResponsiveContainer from '@/components/ui/ResponsiveContainer';
 import ResponsiveGrid from '@/components/ui/ResponsiveGrid';
@@ -15,54 +17,16 @@ import ProgressBar from '@/components/animations/ProgressBar';
 import AnimatedButton from '@/components/ui/AnimatedButton';
 import EmotionChip from '@/components/ui/EmotionChip';
 import PulseView from '@/components/animations/PulseView';
-import { useState } from 'react';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { theme } = useTheme();
+  const { session, user, loading } = useAuth();
   const { isMobile, isTablet, width } = useResponsive();
   const spacing = useResponsiveSpacing();
   const fontSize = useResponsiveFontSize();
 
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
-
-  const quickActions = [
-    {
-      id: 1,
-      title: 'Test Vocacional',
-      subtitle: 'Descubre tu carrera ideal',
-      icon: Brain,
-      color: '#E0E7FF',
-      iconColor: '#6366F1',
-      route: '/test',
-    },
-    {
-      id: 2,
-      title: 'Hablar con Mentor',
-      subtitle: 'Conecta con profesionales',
-      icon: Users,
-      color: '#DBEAFE',
-      iconColor: '#3B82F6',
-      route: '/mentors',
-    },
-    {
-      id: 3,
-      title: 'Apoyo Emocional',
-      subtitle: 'Chat con IA especializada',
-      icon: MessageCircle,
-      color: '#D1FAE5',
-      iconColor: '#10B981',
-      route: '/chat',
-    },
-  ];
-
-  const moods = [
-    { emoji: '😊', label: 'Feliz', color: '#10B981' },
-    { emoji: '😌', label: 'Tranquilo', color: '#3B82F6' },
-    { emoji: '🤔', label: 'Pensativo', color: '#8B5CF6' },
-    { emoji: '😟', label: 'Preocupado', color: '#F59E0B' },
-    { emoji: '😴', label: 'Cansado', color: '#6B7280' },
-  ];
 
   // Estilos responsivos dinámicos
   const responsiveStyles = StyleSheet.create({
@@ -243,6 +207,66 @@ export default function HomeScreen() {
     },
   });
 
+  // Mostrar loading mientras se verifica la sesión
+  if (loading) {
+    return (
+      <SafeAreaView style={[responsiveStyles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={responsiveStyles.greeting}>Cargando...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  // Si llegamos aquí, el usuario está autenticado (el layout se encarga de la redirección)
+  console.log('✅ Renderizando home screen para usuario autenticado:', user?.email);
+
+  const quickActions = [
+    {
+      id: 1,
+      title: 'Test Vocacional',
+      subtitle: 'Descubre tu carrera ideal',
+      icon: Brain,
+      color: '#E0E7FF',
+      iconColor: '#6366F1',
+      route: '/(tabs)/test',
+    },
+    {
+      id: 2,
+      title: 'Hablar con Mentor',
+      subtitle: 'Conecta con profesionales',
+      icon: Users,
+      color: '#DBEAFE',
+      iconColor: '#3B82F6',
+      route: '/(tabs)/mentors',
+    },
+    {
+      id: 3,
+      title: 'Apoyo Emocional',
+      subtitle: 'Chat con IA especializada',
+      icon: MessageCircle,
+      color: '#D1FAE5',
+      iconColor: '#10B981',
+      route: '/(tabs)/chat',
+    },
+  ];
+
+  const moods = [
+    { emoji: '😊', label: 'Feliz', color: '#10B981' },
+    { emoji: '😌', label: 'Tranquilo', color: '#3B82F6' },
+    { emoji: '🤔', label: 'Pensativo', color: '#8B5CF6' },
+    { emoji: '😟', label: 'Preocupado', color: '#F59E0B' },
+    { emoji: '😴', label: 'Cansado', color: '#6B7280' },
+  ];
+
+  const handleActionPress = (route: string) => {
+    try {
+      console.log('🔄 Navegando a:', route);
+      router.push(route as any);
+    } catch (error) {
+      console.error('❌ Error navegando:', error);
+      console.log('⚠️ Ruta no implementada:', route);
+    }
+  };
+
   return (
     <SafeAreaView style={responsiveStyles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -251,7 +275,7 @@ export default function HomeScreen() {
           <FadeInView delay={0}>
             <View style={responsiveStyles.header}>
               <View style={responsiveStyles.headerText}>
-                <Text style={responsiveStyles.greeting}>¡Hola! 👋</Text>
+                <Text style={responsiveStyles.greeting}>¡Hola{user?.email ? `, ${user.email.split('@')[0]}` : ''}! 👋</Text>
                 <Text style={responsiveStyles.subtitle}>¿Cómo te sientes hoy?</Text>
               </View>
               <ScaleInView delay={200}>
@@ -336,7 +360,7 @@ export default function HomeScreen() {
                   {quickActions.map((action) => (
                     <TouchableOpacity
                       key={action.id}
-                      onPress={() => router.push(action.route as any)}
+                      onPress={() => handleActionPress(action.route)}
                       activeOpacity={0.7}
                     >
                       <View style={responsiveStyles.actionCard}>

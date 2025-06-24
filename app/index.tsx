@@ -14,34 +14,40 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function SplashScreen() {
   const router = useRouter();
   const { session, loading } = useAuth();
-  
+
   const logoScale = useSharedValue(0.8);
   const logoOpacity = useSharedValue(0);
   const titleOpacity = useSharedValue(0);
 
   useEffect(() => {
+    console.log('🚀 Splash Screen - Estado inicial:', { session: !!session, loading });
+
     // Animaciones de entrada
     logoOpacity.value = withTiming(1, { duration: 800 });
     logoScale.value = withSpring(1, { damping: 15, stiffness: 100 });
-    
+
     setTimeout(() => {
       titleOpacity.value = withTiming(1, { duration: 600 });
     }, 400);
+  }, []);
 
-    // Lógica de navegación después de las animaciones
-    const timer = setTimeout(() => {
-      if (!loading) {
+  useEffect(() => {
+    console.log('🔄 Splash Screen - Cambio de estado:', { session: !!session, loading });
+
+    // Navegación más rápida y directa
+    if (!loading) {
+      const timer = setTimeout(() => {
         if (session) {
-          // Usuario autenticado -> ir al dashboard
+          console.log('👤 Usuario autenticado, navegando a tabs');
           router.replace('/(tabs)');
         } else {
-          // Usuario no autenticado -> ir a landing/auth
+          console.log('🔓 Usuario no autenticado, navegando a auth');
           router.replace('/(auth)');
         }
-      }
-    }, 2500);
+      }, 1500); // Reducir tiempo de espera
 
-    return () => clearTimeout(timer);
+      return () => clearTimeout(timer);
+    }
   }, [session, loading, router]);
 
   const logoAnimatedStyle = useAnimatedStyle(() => ({
@@ -61,7 +67,7 @@ export default function SplashScreen() {
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
-      
+
       <View style={styles.content}>
         <Animated.View style={[styles.logoContainer, logoAnimatedStyle]}>
           <Image
@@ -69,7 +75,7 @@ export default function SplashScreen() {
             style={styles.logo}
           />
         </Animated.View>
-        
+
         <Animated.View style={titleAnimatedStyle}>
           <Text style={styles.title}>CarreraGuía</Text>
           <Text style={styles.subtitle}>Tu futuro comienza aquí</Text>

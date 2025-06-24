@@ -1,19 +1,28 @@
-import { Stack } from 'expo-router';
+import { Stack, Redirect } from 'expo-router';
+import { View, Text } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
-import { Redirect } from 'expo-router';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function AuthLayout() {
   const { session, loading } = useAuth();
+  const { theme } = useTheme();
 
-  // Si está cargando, no redirigir aún
+  // Mostrar loading mientras se verifica la sesión
   if (loading) {
-    return null;
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme?.colors?.background || '#FFFFFF' }}>
+        <Text style={{ color: theme?.colors?.text || '#000000' }}>Verificando sesión...</Text>
+      </View>
+    );
   }
 
-  // Si ya está autenticado, redirigir al dashboard
+  // Redirigir si ya hay sesión
   if (session) {
+    console.log('✅ Usuario ya autenticado, redirigiendo a tabs desde auth layout');
     return <Redirect href="/(tabs)" />;
   }
+
+  console.log('🔓 Mostrando pantallas de autenticación');
 
   return (
     <Stack screenOptions={{ headerShown: false }}>

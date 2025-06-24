@@ -1,4 +1,5 @@
-import { Tabs, Redirect } from 'expo-router';
+import { Tabs, useRouter, Redirect } from 'expo-router';
+import { View, Text } from 'react-native';
 import { Chrome as Home, Brain, Users, MessageCircle, User, TrendingUp } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -7,15 +8,22 @@ export default function TabLayout() {
   const { session, loading } = useAuth();
   const { theme } = useTheme();
 
-  // Si está cargando, no mostrar nada
+  // Mostrar loading mientras se verifica la sesión
   if (loading) {
-    return null;
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme?.colors?.background || '#FFFFFF' }}>
+        <Text style={{ color: theme?.colors?.text || '#000000' }}>Verificando autenticación...</Text>
+      </View>
+    );
   }
 
-  // Si no está autenticado, redirigir a auth
+  // Redirigir si no hay sesión
   if (!session) {
+    console.log('🚨 Redirigiendo usuario no autenticado desde tabs layout');
     return <Redirect href="/(auth)" />;
   }
+
+  console.log('✅ Usuario autenticado, mostrando tabs');
 
   return (
     <Tabs
@@ -25,10 +33,10 @@ export default function TabLayout() {
         tabBarInactiveTintColor: theme.colors.textMuted,
         tabBarStyle: {
           backgroundColor: theme.colors.surface,
-          borderTopWidth: 0,
-          paddingTop: 8,
+          borderTopColor: theme.colors.border,
+          height: 60,
           paddingBottom: 8,
-          height: 80,
+          paddingTop: 8,
           shadowColor: theme.colors.shadow,
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,

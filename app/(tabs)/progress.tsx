@@ -22,7 +22,7 @@ export default function ProgressScreen() {
   const { isMobile } = useResponsive();
   const spacing = useResponsiveSpacing();
   const fontSize = useResponsiveFontSize();
-  
+
   const {
     currentLevel,
     experiencePoints,
@@ -269,7 +269,7 @@ export default function ProgressScreen() {
           </FadeInView>
 
           {/* Gráficos */}
-          <SlideInView delay={800} direction="up">
+          <FadeInView delay={800}>
             <View style={responsiveStyles.chartSection}>
               <View style={responsiveStyles.chartTabs}>
                 <TouchableOpacity
@@ -317,7 +317,7 @@ export default function ProgressScreen() {
                 />
               )}
             </View>
-          </SlideInView>
+          </FadeInView>
 
           {/* Estados de Ánimo */}
           <FadeInView delay={1000}>

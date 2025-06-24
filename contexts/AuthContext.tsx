@@ -48,6 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setSession(session);
           setUser(session?.user ?? null);
           console.log('✅ Sesión cargada:', session ? 'Autenticado' : 'No autenticado');
+          console.log('👤 Usuario:', session?.user?.email || 'N/A');
         }
       } catch (error) {
         console.error('❌ Error inicializando auth:', error);
@@ -68,6 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('🔄 Cambio de auth:', event, session ? 'Sesión activa' : 'Sin sesión');
+        console.log('👤 Usuario después del cambio:', session?.user?.email || 'N/A');
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
