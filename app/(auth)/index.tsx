@@ -1,16 +1,15 @@
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useResponsive, useResponsiveSpacing, useResponsiveFontSize } from '@/hooks/useResponsive';
 import ResponsiveContainer from '@/components/ui/ResponsiveContainer';
-import BreathingCircle from '@/components/ui/BreathingCircle';
-import EmotionChip from '@/components/ui/EmotionChip';
 import AnimatedButton from '@/components/ui/AnimatedButton';
 import FadeInView from '@/components/animations/FadeInView';
+import EmotionChip from '@/components/ui/EmotionChip';
 import ScaleInView from '@/components/animations/ScaleInView';
 import StaggeredList from '@/components/animations/StaggeredList';
 import SlideInView from '@/components/animations/SlideInView';
@@ -23,7 +22,7 @@ export default function AuthIndex() {
   const { isMobile, isTablet, width, height, orientation } = useResponsive();
   const spacing = useResponsiveSpacing();
   const fontSize = useResponsiveFontSize();
-  
+
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [currentQuote, setCurrentQuote] = useState(0);
 
@@ -213,10 +212,10 @@ export default function AuthIndex() {
     },
   });
 
-  const MoodChip = ({ mood, isSelected, onPress }: { 
-    mood: typeof moods[0], 
-    isSelected: boolean, 
-    onPress: () => void 
+  const MoodChip = ({ mood, isSelected, onPress }: {
+    mood: typeof moods[0],
+    isSelected: boolean,
+    onPress: () => void
   }) => (
     <EmotionChip
       emoji={mood.emoji}
@@ -247,11 +246,27 @@ export default function AuthIndex() {
     </FadeInView>
   );
 
+  const handleThemeToggle = () => {
+    try {
+      toggleTheme();
+    } catch (error) {
+      console.error('Error al cambiar tema:', error);
+    }
+  };
+
+  const handleMoodPress = (mood: string) => {
+    try {
+      setSelectedMood(selectedMood === mood ? null : mood);
+    } catch (error) {
+      console.error('Error al seleccionar mood:', error);
+    }
+  };
+
   return (
     <View style={responsiveStyles.container}>
       {/* Fondo con gradiente sutil */}
       <LinearGradient
-        colors={isDark 
+        colors={isDark
           ? [theme.colors.background, theme.colors.surface, theme.colors.background]
           : [theme.colors.background, '#F3F4F6', theme.colors.background]
         }
@@ -264,7 +279,7 @@ export default function AuthIndex() {
       <SlideInView delay={100} direction="right" distance={100}>
         <TouchableOpacity
           style={responsiveStyles.themeButton}
-          onPress={toggleTheme}
+          onPress={handleThemeToggle}
           activeOpacity={0.7}
         >
           {isDark ? (
@@ -276,7 +291,7 @@ export default function AuthIndex() {
       </SlideInView>
 
       <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView 
+        <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={responsiveStyles.scrollContent}
         >
@@ -286,34 +301,38 @@ export default function AuthIndex() {
               <View style={responsiveStyles.header}>
                 <View style={responsiveStyles.breathingContainer}>
                   <PulseView duration={3000} minScale={1} maxScale={1.05}>
-                    <BreathingCircle 
-                      size={isMobile ? 100 : isTablet ? 120 : 140} 
-                      color={theme.colors.primary}
-                    >
+                    <View style={{
+                      width: isMobile ? 100 : isTablet ? 120 : 140,
+                      height: isMobile ? 100 : isTablet ? 120 : 140,
+                      borderRadius: (isMobile ? 100 : isTablet ? 120 : 140) / 2,
+                      backgroundColor: theme.colors.primary + '20',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
                       <Heart size={isMobile ? 28 : 32} color={theme.colors.primary} />
-                    </BreathingCircle>
+                    </View>
                   </PulseView>
-                  
+
                   <View style={responsiveStyles.sparkleContainer}>
                     <ScaleInView delay={800} bounce={true}>
-                      <Sparkles 
-                        size={16} 
-                        color={theme.colors.accent} 
-                        style={{ position: 'absolute', top: 10, right: 15 }} 
+                      <Sparkles
+                        size={16}
+                        color={theme.colors.accent}
+                        style={{ position: 'absolute', top: 10, right: 15 }}
                       />
                     </ScaleInView>
                     <ScaleInView delay={1000} bounce={true}>
-                      <Sparkles 
-                        size={12} 
-                        color={theme.colors.secondary} 
-                        style={{ position: 'absolute', bottom: 20, left: 10 }} 
+                      <Sparkles
+                        size={12}
+                        color={theme.colors.secondary}
+                        style={{ position: 'absolute', bottom: 20, left: 10 }}
                       />
                     </ScaleInView>
                     <ScaleInView delay={1200} bounce={true}>
-                      <Sparkles 
-                        size={14} 
-                        color={theme.colors.success} 
-                        style={{ position: 'absolute', top: 30, left: -5 }} 
+                      <Sparkles
+                        size={14}
+                        color={theme.colors.success}
+                        style={{ position: 'absolute', top: 30, left: -5 }}
                       />
                     </ScaleInView>
                   </View>
@@ -322,11 +341,11 @@ export default function AuthIndex() {
                 <FadeInView delay={400} direction="up">
                   <Text style={responsiveStyles.welcomeText}>¡Bienvenido!</Text>
                 </FadeInView>
-                
+
                 <FadeInView delay={500} direction="up">
                   <Text style={responsiveStyles.mainTitle}>CarreraGuía</Text>
                 </FadeInView>
-                
+
                 <FadeInView delay={600} direction="up">
                   <Text style={responsiveStyles.subtitle}>
                     Tu compañero inteligente para descubrir tu vocación y cuidar tu bienestar emocional
@@ -342,12 +361,33 @@ export default function AuthIndex() {
                 <View style={responsiveStyles.moodGrid}>
                   <StaggeredList staggerDelay={100} initialDelay={1000}>
                     {moods.map((mood, index) => (
-                      <MoodChip
+                      <TouchableOpacity
                         key={index}
-                        mood={mood}
-                        isSelected={selectedMood === mood.label}
-                        onPress={() => setSelectedMood(selectedMood === mood.label ? null : mood.label)}
-                      />
+                        onPress={() => handleMoodPress(mood.label)}
+                        style={[
+                          {
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            paddingHorizontal: spacing.md,
+                            paddingVertical: spacing.sm,
+                            borderRadius: 20,
+                            backgroundColor: selectedMood === mood.label ? mood.color : theme.colors.surface,
+                            borderWidth: selectedMood === mood.label ? 2 : 1,
+                            borderColor: selectedMood === mood.label ? mood.textColor : theme.colors.border,
+                            marginRight: spacing.sm,
+                            marginBottom: spacing.sm,
+                          }
+                        ]}
+                      >
+                        <Text style={{ fontSize: 20, marginRight: spacing.xs }}>{mood.emoji}</Text>
+                        <Text style={{
+                          fontSize: fontSize.sm,
+                          fontFamily: 'Inter_500Medium',
+                          color: selectedMood === mood.label ? mood.textColor : theme.colors.text,
+                        }}>
+                          {mood.label}
+                        </Text>
+                      </TouchableOpacity>
                     ))}
                   </StaggeredList>
                 </View>
@@ -375,7 +415,7 @@ export default function AuthIndex() {
                     </Text>
                   </View>
                 </ScaleInView>
-                
+
                 <FadeInView delay={2200}>
                   <Text style={responsiveStyles.quoteText}>
                     "{inspirationalQuotes[currentQuote].text}"

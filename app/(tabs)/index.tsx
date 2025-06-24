@@ -1,10 +1,10 @@
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Brain, Users, MessageCircle, BookOpen, Star, TrendingUp, Calendar, Award } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEffect, useState } from 'react';
 import { useResponsive, useResponsiveSpacing, useResponsiveFontSize } from '@/hooks/useResponsive';
 import ResponsiveContainer from '@/components/ui/ResponsiveContainer';
 import ResponsiveGrid from '@/components/ui/ResponsiveGrid';
@@ -15,7 +15,6 @@ import StaggeredList from '@/components/animations/StaggeredList';
 import SlideInView from '@/components/animations/SlideInView';
 import ProgressBar from '@/components/animations/ProgressBar';
 import AnimatedButton from '@/components/ui/AnimatedButton';
-import EmotionChip from '@/components/ui/EmotionChip';
 import PulseView from '@/components/animations/PulseView';
 
 export default function HomeScreen() {
@@ -267,6 +266,14 @@ export default function HomeScreen() {
     }
   };
 
+  const handleMoodPress = (mood: string) => {
+    try {
+      setSelectedMood(selectedMood === mood ? null : mood);
+    } catch (error) {
+      console.error('Error al seleccionar mood:', error);
+    }
+  };
+
   return (
     <SafeAreaView style={responsiveStyles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -299,15 +306,33 @@ export default function HomeScreen() {
               <View style={responsiveStyles.moodContainer}>
                 <StaggeredList staggerDelay={100} initialDelay={400}>
                   {moods.map((mood, index) => (
-                    <EmotionChip
+                    <TouchableOpacity
                       key={index}
-                      emoji={mood.emoji}
-                      label={mood.label}
-                      selected={selectedMood === mood.label}
-                      onPress={() => setSelectedMood(selectedMood === mood.label ? null : mood.label)}
-                      backgroundColor={mood.color + '20'}
-                      textColor={mood.color}
-                    />
+                      onPress={() => handleMoodPress(mood.label)}
+                      style={[
+                        {
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          paddingHorizontal: spacing.md,
+                          paddingVertical: spacing.sm,
+                          borderRadius: 20,
+                          backgroundColor: selectedMood === mood.label ? mood.color + '30' : theme.colors.surface,
+                          borderWidth: selectedMood === mood.label ? 2 : 1,
+                          borderColor: selectedMood === mood.label ? mood.color : theme.colors.border,
+                          marginRight: spacing.sm,
+                          marginBottom: spacing.sm,
+                        }
+                      ]}
+                    >
+                      <Text style={{ fontSize: 20, marginRight: spacing.xs }}>{mood.emoji}</Text>
+                      <Text style={{
+                        fontSize: fontSize.sm,
+                        fontFamily: 'Inter_500Medium',
+                        color: selectedMood === mood.label ? mood.color : theme.colors.text,
+                      }}>
+                        {mood.label}
+                      </Text>
+                    </TouchableOpacity>
                   ))}
                 </StaggeredList>
               </View>
