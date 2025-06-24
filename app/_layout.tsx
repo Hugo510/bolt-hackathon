@@ -38,7 +38,7 @@ const queryClient = new QueryClient({
 
 export default function RootLayout() {
   useFrameworkReady();
-  
+
   const [showDebugger, setShowDebugger] = useState(false);
   const [supabaseReady, setSupabaseReady] = useState(false);
 
@@ -53,21 +53,21 @@ export default function RootLayout() {
     const initializeApp = async () => {
       try {
         console.log('🚀 Inicializando aplicación...');
-        
+
         // Inicializar Supabase
         const supabaseStatus = await initializeSupabase();
         console.log('✅ Supabase inicializado:', supabaseStatus);
-        
+
         setSupabaseReady(true);
-        
+
         // Mostrar debugger en desarrollo si hay problemas
         if (process.env.NODE_ENV === 'development' && !supabaseStatus.connected) {
           setShowDebugger(true);
         }
-        
+
       } catch (error) {
         console.error('❌ Error inicializando aplicación:', error);
-        
+
         // Mostrar debugger en caso de error
         if (process.env.NODE_ENV === 'development') {
           setShowDebugger(true);
@@ -83,23 +83,12 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError, supabaseReady]);
-
   // Mostrar debugger con triple tap en desarrollo
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      let tapCount = 0;
-      const handleTripleTap = () => {
-        tapCount++;
-        if (tapCount === 3) {
-          setShowDebugger(true);
-          tapCount = 0;
-        }
-        setTimeout(() => { tapCount = 0; }, 1000);
-      };
-
-      // Agregar listener para triple tap (solo en desarrollo)
-      document.addEventListener('click', handleTripleTap);
-      return () => document.removeEventListener('click', handleTripleTap);
+      // En React Native no tenemos acceso a document
+      // El debugger se puede mostrar manualmente o con otros métodos
+      // Por ahora, removemos esta funcionalidad de triple tap
     }
   }, []);
 
@@ -123,12 +112,12 @@ export default function RootLayout() {
               <Stack.Screen name="+not-found" />
             </Stack>
             <StatusBar style="auto" />
-            
+
             {/* Debugger de conexión (solo en desarrollo) */}
             {process.env.NODE_ENV === 'development' && (
-              <ConnectionDebugger 
-                visible={showDebugger} 
-                onClose={() => setShowDebugger(false)} 
+              <ConnectionDebugger
+                visible={showDebugger}
+                onClose={() => setShowDebugger(false)}
               />
             )}
           </GestureHandlerRootView>
