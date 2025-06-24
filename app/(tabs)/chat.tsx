@@ -133,7 +133,7 @@ export default function ChatScreen() {
             <TypingText
               text="Escribiendo..."
               speed={100}
-              style={[styles.messageText, styles.aiMessageText]}
+              style={{ ...styles.messageText, ...styles.aiMessageText }}
             />
           ) : (
             <Text style={[
@@ -159,8 +159,8 @@ export default function ChatScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
-        style={styles.container} 
+      <KeyboardAvoidingView
+        style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {/* Header */}
@@ -177,7 +177,7 @@ export default function ChatScreen() {
                 <Text style={styles.headerSubtitle}>Asistente IA • En línea</Text>
               </View>
             </View>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.breathingButton}
               onPress={() => setShowBreathing(!showBreathing)}
             >
@@ -216,7 +216,7 @@ export default function ChatScreen() {
         </FadeInView>
 
         {/* Messages */}
-        <ScrollView 
+        <ScrollView
           ref={scrollViewRef}
           style={styles.messagesContainer}
           showsVerticalScrollIndicator={false}
