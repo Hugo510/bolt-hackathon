@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface UserProgress {
@@ -32,26 +32,28 @@ interface UserProgressState extends UserProgress {
   getPointsToNextLevel: () => number;
 }
 
-const asyncStorage = {
+const zustandAsyncStorage = {
   getItem: async (name: string): Promise<string | null> => {
     try {
-      return await AsyncStorage.getItem(name);
-    } catch {
+      const item = await AsyncStorage.getItem(name);
+      return item;
+    } catch (error) {
+      console.error('Error getting item from AsyncStorage:', error);
       return null;
     }
   },
   setItem: async (name: string, value: string): Promise<void> => {
     try {
       await AsyncStorage.setItem(name, value);
-    } catch {
-      // Silently fail
+    } catch (error) {
+      console.error('Error setting item in AsyncStorage:', error);
     }
   },
   removeItem: async (name: string): Promise<void> => {
     try {
       await AsyncStorage.removeItem(name);
-    } catch {
-      // Silently fail
+    } catch (error) {
+      console.error('Error removing item from AsyncStorage:', error);
     }
   },
 };
@@ -66,27 +68,30 @@ const getPointsForLevel = (level: number): number => {
 
 const checkForNewBadges = (state: UserProgress): string[] => {
   const newBadges: string[] = [];
-  
+
   // Badge por completar primer test
   if (state.testsCompleted >= 1 && !state.badgesEarned.includes('first-test')) {
     newBadges.push('first-test');
   }
-  
+
   // Badge por racha de 7 días
   if (state.streakDays >= 7 && !state.badgesEarned.includes('week-streak')) {
     newBadges.push('week-streak');
   }
-  
+
   // Badge por 10 sesiones
-  if (state.sessionsAttended >= 10 && !state.badgesEarned.includes('mentor-enthusiast')) {
+  if (
+    state.sessionsAttended >= 10 &&
+    !state.badgesEarned.includes('mentor-enthusiast')
+  ) {
     newBadges.push('mentor-enthusiast');
   }
-  
+
   // Badge por alcanzar nivel 5
   if (state.currentLevel >= 5 && !state.badgesEarned.includes('level-5')) {
     newBadges.push('level-5');
   }
-  
+
   return newBadges;
 };
 
@@ -115,7 +120,7 @@ export const useUserProgressStore = create<UserProgressState>()(
           experiencePoints: newExperiencePoints,
           currentLevel: newLevel,
         });
-        
+
         set({
           totalPoints: state.totalPoints + points,
           experiencePoints: newExperiencePoints,
@@ -161,8 +166,10 @@ export const useUserProgressStore = create<UserProgressState>()(
       updateStreak: () => {
         const state = get();
         const today = new Date().toISOString().split('T')[0];
-        const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-        
+        const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split('T')[0];
+
         if (state.lastActivityDate === yesterday) {
           // Continúa la racha
           const newStreak = state.streakDays + 1;
@@ -214,7 +221,7 @@ export const useUserProgressStore = create<UserProgressState>()(
         const nextLevelPoints = getPointsForLevel(state.currentLevel);
         const progressInLevel = state.experiencePoints - currentLevelPoints;
         const pointsNeededForLevel = nextLevelPoints - currentLevelPoints;
-        
+
         return progressInLevel / pointsNeededForLevel;
       },
 
@@ -226,7 +233,7 @@ export const useUserProgressStore = create<UserProgressState>()(
     }),
     {
       name: 'user-progress-storage',
-      storage: asyncStorage,
+      storage: createJSONStorage(() => zustandAsyncStorage),
     }
   )
 );

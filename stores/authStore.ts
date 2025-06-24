@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { User, Session } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -15,27 +15,29 @@ interface AuthState {
   clearAuth: () => void;
 }
 
-// Implementación de storage para AsyncStorage
-const asyncStorage = {
+// Implementación de storage compatible con Zustand
+const zustandAsyncStorage = {
   getItem: async (name: string): Promise<string | null> => {
     try {
-      return await AsyncStorage.getItem(name);
-    } catch {
+      const item = await AsyncStorage.getItem(name);
+      return item;
+    } catch (error) {
+      console.error('Error getting item from AsyncStorage:', error);
       return null;
     }
   },
   setItem: async (name: string, value: string): Promise<void> => {
     try {
       await AsyncStorage.setItem(name, value);
-    } catch {
-      // Silently fail
+    } catch (error) {
+      console.error('Error setting item in AsyncStorage:', error);
     }
   },
   removeItem: async (name: string): Promise<void> => {
     try {
       await AsyncStorage.removeItem(name);
-    } catch {
-      // Silently fail
+    } catch (error) {
+      console.error('Error removing item from AsyncStorage:', error);
     }
   },
 };
@@ -55,11 +57,18 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      storage: asyncStorage,
+      storage: createJSONStorage(() => zustandAsyncStorage),
       partialize: (state) => ({
         user: state.user,
         session: state.session,
         isFirstLaunch: state.isFirstLaunch,
+        // Incluir propiedades requeridas con valores por defecto
+        loading: false,
+        setUser: state.setUser,
+        setSession: state.setSession,
+        setLoading: state.setLoading,
+        setFirstLaunch: state.setFirstLaunch,
+        clearAuth: state.clearAuth,
       }),
     }
   )

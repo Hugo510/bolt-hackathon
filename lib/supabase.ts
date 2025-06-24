@@ -1,20 +1,49 @@
+import 'react-native-url-polyfill/auto';
 import { createClient } from '@supabase/supabase-js';
-import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Only import the polyfill for non-web platforms
-if (Platform.OS !== 'web') {
-  require('react-native-url-polyfill/auto');
-}
+// Custom storage implementation that handles JSON serialization
+const customAsyncStorage = {
+  getItem: async (key: string) => {
+    try {
+      const item = await AsyncStorage.getItem(key);
+      return item;
+    } catch (error) {
+      console.error('Error getting item from AsyncStorage:', error);
+      return null;
+    }
+  },
+  setItem: async (key: string, value: string) => {
+    try {
+      // Ensure value is a string
+      const stringValue =
+        typeof value === 'string' ? value : JSON.stringify(value);
+      await AsyncStorage.setItem(key, stringValue);
+    } catch (error) {
+      console.error('Error setting item in AsyncStorage:', error);
+    }
+  },
+  removeItem: async (key: string) => {
+    try {
+      await AsyncStorage.removeItem(key);
+    } catch (error) {
+      console.error('Error removing item from AsyncStorage:', error);
+    }
+  },
+};
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables. Please check your .env file.');
+  throw new Error(
+    'Missing Supabase environment variables. Please check your .env file.'
+  );
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
+    storage: customAsyncStorage,
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
@@ -40,12 +69,12 @@ export const testConnection = async () => {
     const { data, error } = await supabase
       .from('users')
       .select('count', { count: 'exact', head: true });
-    
+
     if (error) {
       console.error('❌ Error de conexión a Supabase:', error);
       return false;
     }
-    
+
     console.log('✅ Conexión a Supabase exitosa');
     return true;
   } catch (error) {
@@ -59,7 +88,7 @@ export const checkDatabaseSchema = async () => {
   try {
     const tables = [
       'users',
-      'profiles', 
+      'profiles',
       'vocational_tests',
       'mentors',
       'mentor_sessions',
@@ -68,7 +97,7 @@ export const checkDatabaseSchema = async () => {
       'community_posts',
       'user_progress',
       'notifications',
-      'mentorships'
+      'mentorships',
     ];
 
     const results = await Promise.allSettled(
@@ -76,19 +105,24 @@ export const checkDatabaseSchema = async () => {
         const { error } = await supabase
           .from(table)
           .select('count', { count: 'exact', head: true });
-        
+
         if (error) throw new Error(`Tabla ${table}: ${error.message}`);
         return table;
       })
     );
 
-    const successful = results.filter(r => r.status === 'fulfilled').length;
-    const failed = results.filter(r => r.status === 'rejected');
+    const successful = results.filter((r) => r.status === 'fulfilled').length;
+    const failed = results.filter((r) => r.status === 'rejected');
 
-    console.log(`✅ ${successful}/${tables.length} tablas verificadas correctamente`);
-    
+    console.log(
+      `✅ ${successful}/${tables.length} tablas verificadas correctamente`
+    );
+
     if (failed.length > 0) {
-      console.warn('⚠️ Tablas con problemas:', failed.map(f => f.reason));
+      console.warn(
+        '⚠️ Tablas con problemas:',
+        failed.map((f) => f.reason)
+      );
     }
 
     return { successful, failed: failed.length, total: tables.length };
@@ -101,14 +135,16 @@ export const checkDatabaseSchema = async () => {
 // Función para configuración inicial
 export const initializeSupabase = async () => {
   console.log('🔄 Inicializando conexión a Supabase...');
-  
+
   const isConnected = await testConnection();
   if (!isConnected) {
     throw new Error('No se pudo establecer conexión con Supabase');
   }
 
   const schemaStatus = await checkDatabaseSchema();
-  console.log(`📊 Estado del esquema: ${schemaStatus.successful}/${schemaStatus.total} tablas`);
+  console.log(
+    `📊 Estado del esquema: ${schemaStatus.successful}/${schemaStatus.total} tablas`
+  );
 
   return {
     connected: isConnected,
