@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Brain, Users, MessageCircle, BookOpen, Star, TrendingUp, Calendar, Award } from 'lucide-react-native';
+import { Brain, Users, MessageCircle, BookOpen, Star, TrendingUp, Calendar, Award, Heart } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useResponsive, useResponsiveSpacing, useResponsiveFontSize } from '@/hooks/useResponsive';
+import { useEmotionalInsights } from '@/hooks/useEmotionalLogs';
 import ResponsiveContainer from '@/components/ui/ResponsiveContainer';
 import ResponsiveGrid from '@/components/ui/ResponsiveGrid';
 import ResponsiveImage from '@/components/ui/ResponsiveImage';
@@ -16,6 +17,7 @@ import SlideInView from '@/components/animations/SlideInView';
 import ProgressBar from '@/components/animations/ProgressBar';
 import AnimatedButton from '@/components/ui/AnimatedButton';
 import PulseView from '@/components/animations/PulseView';
+import EmotionalInsightCard from '@/components/ui/EmotionalInsightCard';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -26,6 +28,7 @@ export default function HomeScreen() {
   const fontSize = useResponsiveFontSize();
 
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const { data: emotionalInsights } = useEmotionalInsights('week');
 
   // Estilos responsivos dinámicos
   const responsiveStyles = StyleSheet.create({
@@ -246,6 +249,15 @@ export default function HomeScreen() {
       iconColor: '#10B981',
       route: '/(tabs)/chat',
     },
+    {
+      id: 4,
+      title: 'Viaje Emocional',
+      subtitle: 'Visualiza tu progreso emocional',
+      icon: Heart,
+      color: '#FCE7F3',
+      iconColor: '#EC4899',
+      route: '/(tabs)/emotional-journey',
+    },
   ];
 
   const moods = [
@@ -339,6 +351,22 @@ export default function HomeScreen() {
             </View>
           </FadeInView>
 
+          {/* Emotional Insights Card */}
+          {emotionalInsights && (
+            <SlideInView delay={600} direction="up">
+              <EmotionalInsightCard
+                title="Tu Viaje Emocional"
+                totalLogs={emotionalInsights.totalLogs}
+                averageIntensity={emotionalInsights.averageIntensity}
+                moodImprovementRate={emotionalInsights.moodImprovementRate}
+                topEmotion={emotionalInsights.topEmotions[0]?.emotion || 'Neutral'}
+                trend={emotionalInsights.patterns[0]?.trend as 'improving' | 'stable' | 'declining' || 'stable'}
+                timeRange="Última semana"
+                onPress={() => router.push('/(tabs)/emotional-journey')}
+              />
+            </SlideInView>
+          )}
+
           {/* Progress Card */}
           <SlideInView delay={800} direction="up">
             <View style={responsiveStyles.progressCard}>
@@ -378,7 +406,7 @@ export default function HomeScreen() {
             <View style={responsiveStyles.actionsSection}>
               <Text style={responsiveStyles.sectionTitle}>Acciones Rápidas</Text>
               <ResponsiveGrid
-                columns={{ mobile: 1, tablet: 2, desktop: 3 }}
+                columns={{ mobile: 1, tablet: 2, desktop: 2 }}
                 gap={spacing.md}
               >
                 <StaggeredList staggerDelay={150} initialDelay={1800}>

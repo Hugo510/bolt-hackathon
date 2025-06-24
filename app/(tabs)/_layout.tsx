@@ -1,6 +1,6 @@
 import { Tabs, useRouter, Redirect } from 'expo-router';
 import { View, Text } from 'react-native';
-import { Chrome as Home, Brain, Users, MessageCircle, User, TrendingUp } from 'lucide-react-native';
+import { Chrome as Home, Brain, Users, MessageCircle, User, TrendingUp, Heart } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
@@ -83,6 +83,15 @@ export default function TabLayout() {
           title: 'Apoyo',
           tabBarIcon: ({ size, color }) => (
             <MessageCircle size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="emotional-journey"
+        options={{
+          title: 'Emociones',
+          tabBarIcon: ({ size, color }) => (
+            <Heart size={size} color={color} />
           ),
         }}
       />
