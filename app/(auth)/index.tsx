@@ -15,6 +15,7 @@ import StaggeredList from '@/components/animations/StaggeredList';
 import SlideInView from '@/components/animations/SlideInView';
 import PulseView from '@/components/animations/PulseView';
 import { Heart, Brain, Users, MessageCircle, ArrowRight, Moon, Sun, Sparkles, Star } from 'lucide-react-native';
+import BoltBadge from '@/components/ui/BoltBadge';
 
 export default function AuthIndex() {
   const router = useRouter();
@@ -476,6 +477,9 @@ export default function AuthIndex() {
             </View>
           </ResponsiveContainer>
         </ScrollView>
+        
+        {/* Built with Bolt.new badge */}
+        <BoltBadge position="bottom-right" size="medium" />
       </SafeAreaView>
     </View>
   );

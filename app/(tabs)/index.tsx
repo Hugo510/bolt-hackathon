@@ -18,6 +18,7 @@ import ProgressBar from '@/components/animations/ProgressBar';
 import AnimatedButton from '@/components/ui/AnimatedButton';
 import PulseView from '@/components/animations/PulseView';
 import EmotionalInsightCard from '@/components/ui/EmotionalInsightCard';
+import BoltBadge from '@/components/ui/BoltBadge';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -454,6 +455,9 @@ export default function HomeScreen() {
           </SlideInView>
         </ResponsiveContainer>
       </ScrollView>
+      
+      {/* Built with Bolt.new badge */}
+      <BoltBadge position="bottom-right" size="medium" />
     </SafeAreaView>
   );
 }

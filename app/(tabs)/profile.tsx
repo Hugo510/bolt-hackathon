@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useResponsive, useResponsiveSpacing, useResponsiveFontSize } from '@/hooks/useResponsive';
 import { User } from 'lucide-react-native';
 import AnimatedButton from '@/components/ui/AnimatedButton';
+import BoltBadge from '@/components/ui/BoltBadge';
 
 export default function ProfileScreen() {
   const { theme } = useTheme();
@@ -73,6 +74,9 @@ export default function ProfileScreen() {
           size="md"
         />
       </View>
+      
+      {/* Built with Bolt.new badge */}
+      <BoltBadge position="bottom-left" size="small" />
     </SafeAreaView>
   );
 }
