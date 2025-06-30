@@ -1,12 +1,14 @@
 {
-  "name": "vocational-guidance-app",
+  "name": "guide-vocational-app",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
     "start": "npx expo start",
     "android": "npx expo start --android",
     "ios": "npx expo start --ios",
-    "web": "npx expo start --web"
+    "web": "npx expo start --web",
+    "build:web": "npx expo export:web",
+    "deploy": "npx expo export:web && netlify deploy --prod"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.2.3",
@@ -35,7 +37,8 @@
     "react-native-svg": "15.11.2",
     "react-native-url-polyfill": "^2.0.0",
     "victory-native": "^37.0.2",
-    "zustand": "^4.4.7"
+    "zustand": "^4.4.7",
+    "netlify-cli": "^17.19.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
