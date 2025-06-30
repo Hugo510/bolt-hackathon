@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Heart, TrendingUp, ArrowUp, ArrowDown, Calendar } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useResponsiveSpacing, useResponsiveFontSize } from '@/hooks/useResponsive';
@@ -79,8 +79,15 @@ export default function EmotionalInsightCard({
       flexDirection: 'row',
       alignItems: 'center',
     },
-    icon: {
+    logoContainer: {
+      width: 24,
+      height: 24,
       marginRight: spacing.sm,
+    },
+    logo: {
+      width: '100%',
+      height: '100%',
+      resizeMode: 'contain',
     },
     title: {
       fontSize: fontSize.md,
@@ -160,7 +167,9 @@ export default function EmotionalInsightCard({
     >
       <View style={styles.header}>
         <View style={styles.titleContainer}>
-          <Heart size={20} color={theme.colors.primary} style={styles.icon} />
+          <View style={styles.logoContainer}>
+            <Image source={require('@/assets/images/1.png')} style={styles.logo} />
+          </View>
           <Text style={styles.title}>{title}</Text>
         </View>
         <View style={styles.timeRange}>

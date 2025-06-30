@@ -1,5 +1,5 @@
 import { Tabs, useRouter, Redirect } from 'expo-router';
-import { View, Text } from 'react-native';
+import { View, Text, Image } from 'react-native';
 import { Chrome as Home, Brain, Users, MessageCircle, User, TrendingUp, Heart } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';

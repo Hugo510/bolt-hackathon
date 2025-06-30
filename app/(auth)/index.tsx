@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -96,8 +96,7 @@ export default function AuthIndex() {
       paddingTop: isMobile ? spacing.xl : spacing.xxl,
       paddingBottom: spacing.lg,
     },
-    breathingContainer: {
-      position: 'relative',
+    logoContainer: {
       marginBottom: spacing.lg,
     },
     welcomeText: {
@@ -107,7 +106,7 @@ export default function AuthIndex() {
       color: theme.colors.textSecondary,
     },
     mainTitle: {
-      fontSize: isMobile ? fontSize.display : fontSize.display + 8,
+      fontSize: isMobile ? fontSize.xxxl : fontSize.display,
       fontFamily: 'Inter_700Bold',
       marginBottom: spacing.md,
       textAlign: 'center',
@@ -323,46 +322,15 @@ export default function AuthIndex() {
           contentContainerStyle={responsiveStyles.scrollContent}
         >
           <ResponsiveContainer maxWidth={{ mobile: '100%', tablet: 600, desktop: 800 }}>
-            {/* Header con elemento de respiración */}
+            {/* Header con logo */}
             <FadeInView delay={200} direction="down">
               <View style={responsiveStyles.header}>
-                <View style={responsiveStyles.breathingContainer}>
-                  <PulseView duration={3000} minScale={1} maxScale={1.05}>
-                    <View style={{
-                      width: isMobile ? 100 : isTablet ? 120 : 140,
-                      height: isMobile ? 100 : isTablet ? 120 : 140,
-                      borderRadius: (isMobile ? 100 : isTablet ? 120 : 140) / 2,
-                      backgroundColor: theme.colors.primary + '20',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
-                      <Heart size={isMobile ? 28 : 32} color={theme.colors.primary} />
-                    </View>
-                  </PulseView>
-
-                  <View style={responsiveStyles.sparkleContainer}>
-                    <ScaleInView delay={800} bounce={true}>
-                      <Sparkles
-                        size={16}
-                        color={theme.colors.accent}
-                        style={{ position: 'absolute', top: 10, right: 15 }}
-                      />
-                    </ScaleInView>
-                    <ScaleInView delay={1000} bounce={true}>
-                      <Sparkles
-                        size={12}
-                        color={theme.colors.secondary}
-                        style={{ position: 'absolute', bottom: 20, left: 10 }}
-                      />
-                    </ScaleInView>
-                    <ScaleInView delay={1200} bounce={true}>
-                      <Sparkles
-                        size={14}
-                        color={theme.colors.success}
-                        style={{ position: 'absolute', top: 30, left: -5 }}
-                      />
-                    </ScaleInView>
-                  </View>
+                <View style={responsiveStyles.logoContainer}>
+                  <Image
+                    source={require('@/assets/images/1.png')}
+                    style={{ width: 120, height: 120 }}
+                    resizeMode="contain"
+                  />
                 </View>
 
                 <FadeInView delay={400} direction="up">
@@ -370,7 +338,7 @@ export default function AuthIndex() {
                 </FadeInView>
 
                 <FadeInView delay={500} direction="up">
-                  <Text style={responsiveStyles.mainTitle}>CarreraGuía</Text>
+                  <Text style={responsiveStyles.mainTitle}>Guide</Text>
                 </FadeInView>
 
                 <FadeInView delay={600} direction="up">
